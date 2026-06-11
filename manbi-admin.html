@@ -367,7 +367,7 @@ input,select,textarea{font-family:var(--fb)}
 
 <script>
 var API = 'https://manbi-backend.onrender.com/api';
-var ADMIN_PASSWORD = 'Manbi@Admin2026'; // Change this to your own password
+var ADMIN_PASSWORD = 'Noceilings@2000'; // Change this to your own password
 var adminToken = null;
 
 // ── LOGIN ──
@@ -383,11 +383,14 @@ function adminLogin() {
     return;
   }
 
-  // Get admin token from backend FIRST, then show dashboard
-  var btn = document.querySelector('.login-btn');
-  btn.textContent = 'Signing in...';
-  btn.disabled = true;
+  // Password correct — open dashboard immediately
+  sessionStorage.setItem('manbi_admin', '1');
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('adminPage').style.display = 'block';
+  loadOverview();
+  loadApplications();
 
+  // Fetch API token in background for protected endpoints
   fetch(API + '/auth/login', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
@@ -395,33 +398,15 @@ function adminLogin() {
   })
   .then(function(r) { return r.json(); })
   .then(function(data) {
-    btn.textContent = 'Sign in to Admin Panel';
-    btn.disabled = false;
-    if (data.error) {
-      showErr('API error: ' + data.error);
-      return;
-    }
     if (data.token) {
       adminToken = data.token;
       sessionStorage.setItem('manbi_admin_token', adminToken);
+      // Reload data now that we have a token
+      loadOverview();
+      loadApplications();
     }
-    // Now show dashboard with valid token
-    sessionStorage.setItem('manbi_admin', '1');
-    document.getElementById('loginPage').style.display = 'none';
-    document.getElementById('adminPage').style.display = 'block';
-    loadOverview();
-    loadApplications();
   })
-  .catch(function() {
-    btn.textContent = 'Sign in to Admin Panel';
-    btn.disabled = false;
-    // Still allow access if API is down — local password check passed
-    sessionStorage.setItem('manbi_admin', '1');
-    document.getElementById('loginPage').style.display = 'none';
-    document.getElementById('adminPage').style.display = 'block';
-    loadOverview();
-    loadApplications();
-  });
+  .catch(function() {});
 
 function showErr(msg) {
   document.getElementById('loginErrText').textContent = msg;
