@@ -171,7 +171,7 @@ input,select,textarea{font-family:var(--fb)}
     <input class="f-input" id="adminPw" type="password" placeholder="Enter admin password"
            onkeydown="if(event.key==='Enter')adminLogin()">
 
-    <button class="login-btn" onclick="adminLogin()">Sign in to Admin Panel</button>
+    <button class="login-btn" id="loginBtn" onclick="adminLogin()">Sign In</button>
     <div style="text-align:center;font-size:12px;color:rgba(255,255,255,.0)">.</div>
   </div>
 </div>
@@ -367,30 +367,20 @@ input,select,textarea{font-family:var(--fb)}
 
 <script>
 var API = 'https://manbi-backend.onrender.com/api';
-var ADMIN_PASSWORD = 'Noceilings@2000'; // Change this to your own password
 var adminToken = null;
 
 // ── LOGIN ──
 function adminLogin() {
   var pw = document.getElementById('adminPw').value;
-  var err = document.getElementById('loginErr');
+  var btn = document.getElementById('loginBtn');
 
   if (!pw) { showErr('Please enter the admin password.'); return; }
-  if (pw !== ADMIN_PASSWORD) {
-    showErr('Incorrect password. Please try again.');
-    document.getElementById('adminPw').value = '';
-    document.getElementById('adminPw').classList.add('error');
-    return;
-  }
 
-  // Password correct — open dashboard immediately
-  sessionStorage.setItem('manbi_admin', '1');
-  document.getElementById('loginPage').style.display = 'none';
-  document.getElementById('adminPage').style.display = 'block';
-  loadOverview();
-  loadApplications();
+  btn.textContent = 'Signing in…';
+  btn.disabled = true;
+  document.getElementById('loginErr').classList.remove('show');
+  document.getElementById('adminPw').classList.remove('error');
 
-  // Fetch API token in background for protected endpoints
   fetch(API + '/auth/login', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
@@ -398,15 +388,27 @@ function adminLogin() {
   })
   .then(function(r) { return r.json(); })
   .then(function(data) {
+    btn.textContent = 'Sign In';
+    btn.disabled = false;
     if (data.token) {
       adminToken = data.token;
+      sessionStorage.setItem('manbi_admin', '1');
       sessionStorage.setItem('manbi_admin_token', adminToken);
-      // Reload data now that we have a token
+      document.getElementById('loginPage').style.display = 'none';
+      document.getElementById('adminPage').style.display = 'block';
       loadOverview();
       loadApplications();
+    } else {
+      showErr(data.error || 'Incorrect password. Please try again.');
+      document.getElementById('adminPw').value = '';
+      document.getElementById('adminPw').classList.add('error');
     }
   })
-  .catch(function() {});
+  .catch(function() {
+    btn.textContent = 'Sign In';
+    btn.disabled = false;
+    showErr('Could not reach server. Check your connection and try again.');
+  });
 }
 
 function showErr(msg) {
