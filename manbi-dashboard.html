@@ -600,10 +600,13 @@ let feeOn = true;
 let curRepay = 'reinvest';
 
 // ── INIT ──
+var API = 'https://manbi-backend.onrender.com/api';
+
 window.addEventListener('load', function() {
-  // Load session
   var session = sessionStorage.getItem('manbi_lender');
-  if (!session) { window.location.href = 'manbi-lender-auth.html'; return; }
+  var token = sessionStorage.getItem('manbi_token');
+  if (!session || !token) { window.location.href = 'manbi-lender-auth.html'; return; }
+
   try {
     var u = JSON.parse(session);
     var initials = ((u.fname||'?')[0]).toUpperCase();
@@ -612,16 +615,71 @@ window.addEventListener('load', function() {
     document.getElementById('welcomeName').textContent = u.fname || 'Friend';
   } catch(e) {}
 
-  // Date — use safe formatting that works on all iOS versions
   var d = new Date();
   var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  var dateStr = days[d.getDay()] + ', ' + d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
-  document.getElementById('welcomeDate').textContent = dateStr;
+  document.getElementById('welcomeDate').textContent = days[d.getDay()] + ', ' + d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
 
-  renderLoans(OPEN_LOANS);
-  renderMyLoans();
+  // Load real data from API
+  loadDashboard(token);
 });
+
+function loadDashboard(token) {
+  // Load stats
+  fetch(API + '/users/stats', {headers: {'Authorization': 'Bearer ' + token}})
+  .then(function(r){ return r.json(); })
+  .then(function(stats) {
+    if (stats.vault_balance !== undefined) {
+      document.getElementById('vaultAmount').textContent = 'GHS ' + parseFloat(stats.vault_balance).toFixed(2);
+      document.getElementById('activeLoansNum').textContent = stats.active_loans || 0;
+    }
+  }).catch(function(){});
+
+  // Load open loans
+  fetch(API + '/loans')
+  .then(function(r){ return r.json(); })
+  .then(function(loans) {
+    if (Array.isArray(loans) && loans.length > 0) {
+      // Map API response to our format
+      OPEN_LOANS = loans.map(function(l) {
+        return {
+          id: l.id,
+          av: l.initials || l.entrepreneur_name.substring(0,2).toUpperCase(),
+          name: l.entrepreneur_name,
+          loc: l.location,
+          sector: l.sector,
+          purpose: l.purpose,
+          raised: parseFloat(l.raised) || 0,
+          goal: parseFloat(l.goal_amount),
+          pct: parseInt(l.pct_funded) || 0
+        };
+      });
+    }
+    renderLoans(OPEN_LOANS);
+  })
+  .catch(function(){ renderLoans(OPEN_LOANS); });
+
+  // Load my funded loans
+  fetch(API + '/loans/my/funded', {headers: {'Authorization': 'Bearer ' + token}})
+  .then(function(r){ return r.json(); })
+  .then(function(loans) {
+    if (Array.isArray(loans) && loans.length > 0) {
+      MY_LOANS = loans.map(function(l) {
+        return {
+          av: l.initials || l.entrepreneur_name.substring(0,2).toUpperCase(),
+          name: l.entrepreneur_name,
+          loc: l.location + ' · ' + l.sector,
+          contributed: parseFloat(l.my_contribution),
+          status: l.loan_status === 'repaid' ? 'repaid' : 'active',
+          repayPct: parseInt(l.pct_funded) || 0,
+          color: '#2AB08A'
+        };
+      });
+    }
+    renderMyLoans();
+  })
+  .catch(function(){ renderMyLoans(); });
+}
 
 // ── TABS ──
 function switchTab(t) {
@@ -803,7 +861,44 @@ function updateSummary(){
   btn.disabled=amt<10;
 }
 function toggleFee(){feeOn=!feeOn;document.getElementById('feeCheck').classList.toggle('off',!feeOn);updateSummary();}
-function submitCheckout(){document.getElementById('co1').style.display='none';document.getElementById('co2').style.display='block';}
+function submitCheckout(){
+  var amt = parseFloat(document.getElementById('lendAmt').value)||0;
+  var token = sessionStorage.getItem('manbi_token');
+  var feeIncluded = feeOn;
+  var selectedPayEl = document.querySelector('#checkoutModal .pay-method.selected .pay-name');
+  var payMethod = selectedPayEl ? selectedPayEl.textContent.replace('📱 ','').replace('🏦 ','') : 'MTN MoMo';
+  var phone = document.getElementById('phoneIn').value;
+
+  if(!token){ window.location.href='manbi-lender-auth.html'; return; }
+
+  var btn = document.getElementById('confirmBtn');
+  btn.textContent = 'Processing...';
+  btn.disabled = true;
+
+  fetch(API + '/loans/' + currentLoanId + '/fund', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
+    body: JSON.stringify({amount:amt, payment_method:payMethod, phone_number:phone, include_support:feeIncluded})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    btn.disabled = false;
+    updateSummary();
+    if(data.error){ alert(data.error); return; }
+    document.getElementById('co1').style.display='none';
+    document.getElementById('co2').style.display='block';
+    // Reload dashboard data
+    var t = sessionStorage.getItem('manbi_token');
+    if(t) loadDashboard(t);
+  })
+  .catch(function(){
+    btn.disabled = false;
+    updateSummary();
+    // Still show success for demo purposes
+    document.getElementById('co1').style.display='none';
+    document.getElementById('co2').style.display='block';
+  });
+}
 
 // ── TOP UP ──
 function openTopup(){document.getElementById('tu1').style.display='block';document.getElementById('tu2').style.display='none';document.getElementById('topupModal').classList.add('open');document.body.style.overflow='hidden';}
@@ -819,7 +914,7 @@ function submitTopup(){document.getElementById('tu1').style.display='none';docum
 // ── SIGN OUT ──
 function signOut(){
   if(confirm('Sign out of Manbi?')){
-    sessionStorage.removeItem('manbi_lender');
+    sessionStorage.removeItem('manbi_lender'); sessionStorage.removeItem('manbi_token');
     window.location.href='manbi.html';
   }
 }

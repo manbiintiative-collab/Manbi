@@ -489,15 +489,17 @@ function toggleTerms(){
   el.textContent=termsAccepted?'✓':'';
 }
 
+const API = 'https://manbi-backend.onrender.com/api';
+
 /* ── SIGN UP ── */
 function submitSignup(){
-  const fname=document.getElementById('su-fname').value.trim();
-  const lname=document.getElementById('su-lname').value.trim();
-  const email=document.getElementById('su-email').value.trim().toLowerCase();
-  const momo=document.getElementById('su-momo').value.trim();
-  const pw=document.getElementById('su-pw').value;
-  const errEl=document.getElementById('signupErr');
-  const errTxt=document.getElementById('signupErrText');
+  var fname=document.getElementById('su-fname').value.trim();
+  var lname=document.getElementById('su-lname').value.trim();
+  var email=document.getElementById('su-email').value.trim().toLowerCase();
+  var momo=document.getElementById('su-momo').value.trim();
+  var pw=document.getElementById('su-pw').value;
+  var errEl=document.getElementById('signupErr');
+  var errTxt=document.getElementById('signupErrText');
 
   if(!fname||!lname||!email||!momo||!pw){
     errTxt.textContent='Please fill in all required fields.';
@@ -516,49 +518,71 @@ function submitSignup(){
     errEl.classList.add('show'); return;
   }
 
-  const users=getUsers();
-  if(users[email]){
-    errTxt.textContent='An account with this email already exists. Please sign in.';
-    errEl.classList.add('show'); return;
-  }
+  var btn=document.querySelector('#signupForm .submit-btn');
+  btn.textContent='Creating account...';
+  btn.disabled=true;
 
-  // Save user (in production: hashed pw + server)
-  users[email]={fname,lname,email,momo,network:selectedNetwork,pw,avatar:'🌱',squad:null,level:'Seed Sower',joined:new Date().toISOString()};
-  saveUsers(users);
-  currentUser={...users[email]};
-  sessionStorage.setItem('manbi_lender', JSON.stringify(currentUser));
-
-  startOnboarding(fname);
+  fetch(API+'/auth/register',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({fname:fname,lname:lname,email:email,momo:momo,network:selectedNetwork,password:pw})
+  })
+  .then(function(res){return res.json();})
+  .then(function(data){
+    btn.textContent='Create my impact profile \uD83C\uDF31';
+    btn.disabled=false;
+    if(data.error){errTxt.textContent=data.error;errEl.classList.add('show');return;}
+    sessionStorage.setItem('manbi_token',data.token);
+    sessionStorage.setItem('manbi_lender',JSON.stringify(data.user));
+    currentUser=data.user;
+    startOnboarding(fname);
+  })
+  .catch(function(){
+    btn.textContent='Create my impact profile \uD83C\uDF31';
+    btn.disabled=false;
+    errTxt.textContent='Network error. Please check your connection and try again.';
+    errEl.classList.add('show');
+  });
 }
 
 /* ── GOOGLE AUTH ── */
 function googleAuth(){
-  // Simulate Google auth — in production integrate Google OAuth
-  currentUser={fname:'Kofi',lname:'Mensah',email:'kofi@gmail.com',momo:'',network:'mtn',avatar:'🌱',squad:null,level:'Seed Sower'};
-  sessionStorage.setItem('manbi_lender', JSON.stringify(currentUser));
-  startOnboarding('Kofi');
+  alert('Google sign-in coming soon! Please use email signup for now.');
 }
 
 /* ── LOGIN ── */
 function submitLogin(){
-  const email=document.getElementById('li-email').value.trim().toLowerCase();
-  const pw=document.getElementById('li-pw').value;
-  const errEl=document.getElementById('loginErr');
-  const errTxt=document.getElementById('loginErrText');
+  var email=document.getElementById('li-email').value.trim().toLowerCase();
+  var pw=document.getElementById('li-pw').value;
+  var errEl=document.getElementById('loginErr');
+  var errTxt=document.getElementById('loginErrText');
 
-  if(!email||!pw){ errTxt.textContent='Please enter your email and password.'; errEl.classList.add('show'); return; }
+  if(!email||!pw){errTxt.textContent='Please enter your email and password.';errEl.classList.add('show');return;}
 
-  const users=getUsers();
-  const user=users[email];
-  if(!user||user.pw!==pw){
-    errTxt.textContent='Incorrect email or password. Please try again.';
-    errEl.classList.add('show'); return;
-  }
+  var btn=document.querySelector('#loginForm .submit-btn');
+  btn.textContent='Signing in...';
+  btn.disabled=true;
 
-  currentUser={...user};
-  sessionStorage.setItem('manbi_lender', JSON.stringify(currentUser));
-  // Returning user — skip onboarding, go straight to dashboard
-  window.location.href='manbi-dashboard.html';
+  fetch(API+'/auth/login',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({email:email,password:pw})
+  })
+  .then(function(res){return res.json();})
+  .then(function(data){
+    btn.textContent='Sign in to Manbi \u2192';
+    btn.disabled=false;
+    if(data.error){errTxt.textContent=data.error;errEl.classList.add('show');return;}
+    sessionStorage.setItem('manbi_token',data.token);
+    sessionStorage.setItem('manbi_lender',JSON.stringify(data.user));
+    window.location.href='manbi-dashboard.html';
+  })
+  .catch(function(){
+    btn.textContent='Sign in to Manbi \u2192';
+    btn.disabled=false;
+    errTxt.textContent='Network error. Please check your connection and try again.';
+    errEl.classList.add('show');
+  });
 }
 
 /* ── ONBOARDING ── */
@@ -566,53 +590,57 @@ function startOnboarding(fname){
   document.getElementById('authCard').style.display='none';
   document.getElementById('onboarding').style.display='block';
   document.getElementById('prevName').textContent=fname+' '+(currentUser.lname||'');
-  // Pre-fill name in preview
 }
 
 function obNext(step){
   document.getElementById('ob'+step).classList.remove('active');
-  if(step<3){
-    document.getElementById('ob'+(step+1)).classList.add('active');
-  }
+  if(step<3){document.getElementById('ob'+(step+1)).classList.add('active');}
 }
 
 /* ── AVATAR ── */
-function selAvatar(el, emoji){
-  document.querySelectorAll('.av-opt').forEach(a=>a.classList.remove('selected'));
+function selAvatar(el,emoji){
+  document.querySelectorAll('.av-opt').forEach(function(a){a.classList.remove('selected');});
   el.classList.add('selected');
   selectedAvatar=emoji;
   document.getElementById('prevAvatar').textContent=emoji;
-  if(currentUser){ currentUser.avatar=emoji; sessionStorage.setItem('manbi_lender',JSON.stringify(currentUser)); }
+  if(currentUser){
+    currentUser.avatar=emoji;
+    sessionStorage.setItem('manbi_lender',JSON.stringify(currentUser));
+    var token=sessionStorage.getItem('manbi_token');
+    if(token){fetch(API+'/users/profile',{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({avatar:emoji})}).catch(function(){});}
+  }
 }
 
 /* ── SQUAD ── */
-function selSquad(el, squad){
-  document.querySelectorAll('.squad-opt').forEach(s=>s.classList.remove('selected'));
+function selSquad(el,squad){
+  document.querySelectorAll('.squad-opt').forEach(function(s){s.classList.remove('selected');});
   el.classList.add('selected');
   selectedSquad=squad;
-  if(currentUser){ currentUser.squad=squad; sessionStorage.setItem('manbi_lender',JSON.stringify(currentUser)); }
+  if(currentUser){
+    currentUser.squad=squad;
+    sessionStorage.setItem('manbi_lender',JSON.stringify(currentUser));
+    var token=sessionStorage.getItem('manbi_token');
+    if(token){fetch(API+'/users/profile',{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({squad:squad})}).catch(function(){});}
+  }
 }
 
 /* ── FINISH ── */
 function goToDashboard(action){
-  if(currentUser){ currentUser.avatar=selectedAvatar; currentUser.squad=selectedSquad; sessionStorage.setItem('manbi_lender',JSON.stringify(currentUser)); }
-  // In production: redirect to dashboard with action param
-  window.location.href='manbi-dashboard.html'+(action==='fund'?'#fund-kwame':'');
+  window.location.href='manbi-dashboard.html';
 }
 
 /* ── CHECK SESSION ── */
-window.addEventListener('load',()=>{
-  const session=sessionStorage.getItem('manbi_lender');
-  if(session){ window.location.href='manbi-dashboard.html'; }
-  // Pre-fill name preview with placeholder
-  document.getElementById('su-fname').addEventListener('input',()=>{
-    const fn=document.getElementById('su-fname').value||'Kofi';
-    const ln=document.getElementById('su-lname').value||'Asante';
+window.addEventListener('load',function(){
+  var session=sessionStorage.getItem('manbi_lender');
+  if(session){window.location.href='manbi-dashboard.html';return;}
+  document.getElementById('su-fname').addEventListener('input',function(){
+    var fn=document.getElementById('su-fname').value||'Kofi';
+    var ln=document.getElementById('su-lname').value||'Asante';
     document.getElementById('prevName').textContent=fn+' '+ln;
   });
-  document.getElementById('su-lname').addEventListener('input',()=>{
-    const fn=document.getElementById('su-fname').value||'Kofi';
-    const ln=document.getElementById('su-lname').value||'Asante';
+  document.getElementById('su-lname').addEventListener('input',function(){
+    var fn=document.getElementById('su-fname').value||'Kofi';
+    var ln=document.getElementById('su-lname').value||'Asante';
     document.getElementById('prevName').textContent=fn+' '+ln;
   });
 });

@@ -193,10 +193,10 @@ function handleSubmit(e) {
 
   // Submit to Netlify
   var formData = new FormData(e.target);
-  fetch('/', {
+  fetch('https://manbi-backend.onrender.com/api/users/interest', {
     method: 'POST',
-    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-    body: new URLSearchParams(formData).toString()
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({full_name: name, phone: phone, community: community, amount_range: amount, purpose: purpose})
   }).then(function() {
     document.getElementById('formView').style.display = 'none';
     document.getElementById('successView').style.display = 'block';

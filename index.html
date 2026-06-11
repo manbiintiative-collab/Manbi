@@ -659,10 +659,10 @@ function submitInterest(){
   if(!name||!phone||!community||!amount||!purpose){alert('Please fill in all fields.');return;}
 
   // Post to Netlify
-  fetch('/',{
+  fetch('https://manbi-backend.onrender.com/api/users/interest',{
     method:'POST',
-    headers:{'Content-Type':'application/x-www-form-urlencoded'},
-    body:'form-name=borrower-interest-modal&full-name='+encodeURIComponent(name)+'&mobile-number='+encodeURIComponent(phone)+'&community='+encodeURIComponent(community)+'&loan-amount='+encodeURIComponent(amount)+'&purpose='+encodeURIComponent(purpose)
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({full_name:name,phone:phone,community:community,amount_range:amount,purpose:purpose})
   }).catch(function(){});
 
   document.getElementById('int1').style.display='none';
