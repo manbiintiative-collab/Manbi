@@ -639,12 +639,19 @@ function openApprove(app) {
     '</div>' +
     '<p style="font-size:13px;color:var(--ink60);margin-bottom:20px">Make sure you have verified their details and completed the CARE form before approving.</p>' +
     '<div style="display:flex;gap:10px">' +
-    '<button class="btn-primary" style="flex:1;justify-content:center" onclick="closeModal('approveModal');switchAdminTab('add');prefillFromApp(' + JSON.stringify(app).replace(/"/g,"'") + ')">Fill in CARE details →</button>' +
-    '<button class="btn-danger" onclick="closeModal('approveModal')">Cancel</button>' +
+    '<button class="btn-primary" style="flex:1;justify-content:center" id="approveGoBtn">Fill in CARE details →</button>' +
+    '<button class="btn-danger" id="approveCancelBtn">Cancel</button>' +
     '</div>';
   document.getElementById('approveModal').classList.add('open');
+  document.getElementById('approveGoBtn').onclick = function() {
+    closeModal('approveModal');
+    switchAdminTab('add');
+    prefillFromApp(app);
+  };
+  document.getElementById('approveCancelBtn').onclick = function() {
+    closeModal('approveModal');
+  };
 }
-
 function prefillFromApp(app) {
   document.getElementById('add-name').value = app.full_name || '';
   document.getElementById('add-location').value = app.community || '';
