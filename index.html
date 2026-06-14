@@ -336,6 +336,92 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:40px 8%;display
 /* loan card stagger already handled by stagger-children */
 /* hero stat counter */
 .hstat-num{transition:color .3s}
+
+/* ── TASTEFUL ANIMATIONS ── */
+
+/* Hero content floats up on load */
+@keyframes heroFloat {
+  0%   { opacity:0; transform:translateY(36px); }
+  100% { opacity:1; transform:translateY(0); }
+}
+.hero-tag    { animation: heroFloat .7s ease both; animation-delay:.1s }
+.hero h1     { animation: heroFloat .75s ease both; animation-delay:.25s }
+.hero-sub    { animation: heroFloat .75s ease both; animation-delay:.4s }
+.hero-btns   { animation: heroFloat .75s ease both; animation-delay:.55s }
+.hero-stats  { animation: heroFloat .75s ease both; animation-delay:.7s }
+
+/* Section labels slide in from left */
+@keyframes labelSlide {
+  0%   { opacity:0; transform:translateX(-16px); }
+  100% { opacity:1; transform:translateX(0); }
+}
+.sec-label.animate { animation: labelSlide .5s ease both; }
+
+/* Kente bar shimmer on load */
+@keyframes kenteShimmer {
+  0%   { background-position: -200px 0; }
+  100% { background-position: 200px 0; }
+}
+
+/* Loan card hover — lift + glow */
+.loan-card {
+  transition: box-shadow .25s ease, transform .25s ease !important;
+}
+.loan-card:hover {
+  transform: translateY(-6px) !important;
+  box-shadow: 0 16px 48px rgba(15,28,23,.13) !important;
+}
+
+/* Impact strip numbers pop in */
+@keyframes numPop {
+  0%   { opacity:0; transform:scale(.8); }
+  70%  { transform:scale(1.05); }
+  100% { opacity:1; transform:scale(1); }
+}
+.impact-strip.visible .impact-num {
+  animation: numPop .55s ease both;
+}
+.impact-strip.visible .impact-num:nth-child(1) { animation-delay:.05s }
+.impact-strip.visible .impact-num:nth-child(2) { animation-delay:.15s }
+.impact-strip.visible .impact-num:nth-child(3) { animation-delay:.25s }
+.impact-strip.visible .impact-num:nth-child(4) { animation-delay:.35s }
+
+/* Step cards fan in */
+.steps.visible .step {
+  animation: heroFloat .55s ease both;
+}
+.steps.visible .step:nth-child(1) { animation-delay:.05s }
+.steps.visible .step:nth-child(2) { animation-delay:.15s }
+.steps.visible .step:nth-child(3) { animation-delay:.25s }
+.steps.visible .step:nth-child(4) { animation-delay:.35s }
+
+/* Testimonial cards */
+.testi-grid.visible .testi-card {
+  animation: heroFloat .55s ease both;
+}
+.testi-grid.visible .testi-card:nth-child(1) { animation-delay:.05s }
+.testi-grid.visible .testi-card:nth-child(2) { animation-delay:.2s }
+.testi-grid.visible .testi-card:nth-child(3) { animation-delay:.35s }
+.testi-grid.visible .testi-card:nth-child(4) { animation-delay:.5s }
+
+/* Funding bar fill animation */
+.loan-bar-fill {
+  transition: width .9s cubic-bezier(.22,.68,0,1.2) !important;
+}
+
+/* Punch section text fade */
+@keyframes punchIn {
+  0%   { opacity:0; transform:translateY(20px); }
+  100% { opacity:1; transform:translateY(0); }
+}
+.punch.visible h2,
+.punch.visible .punch-sub,
+.punch.visible .punch-btns {
+  animation: punchIn .6s ease both;
+}
+.punch.visible h2        { animation-delay:.1s }
+.punch.visible .punch-sub { animation-delay:.25s }
+.punch.visible .punch-btns { animation-delay:.4s }
 @media(prefers-reduced-motion:reduce){
   .reveal,.reveal-left,.reveal-scale,.stagger-children>*,.hero-content>*{opacity:1!important;transform:none!important;animation:none!important}
 }
@@ -437,9 +523,9 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:40px 8%;display
 
 <!-- LIVE LOAN LISTINGS -->
 <section class="loans-sec" id="loans">
-  <div class="loans-header reveal">
-    <div class="sec-label" style="color:var(--t500)">Support Active Projects</div>
-    <h2 class="loans-title">Support active projects</h2>
+  <div class="loans-header">
+    <div class="sec-label" style="color:var(--t500)">Live Now</div>
+    <h2 class="loans-title">Entrepreneurs waiting for you</h2>
     <p class="loans-sub">Every listing below is a real person, a real business, a real dream. Fund the remaining amount!</p>
   </div>
   <div class="loans-grid stagger-children" id="loansGrid">
@@ -857,6 +943,7 @@ function submitSupport(){
 }
 </script>
 
+<script>
 // ── FETCH LIVE LOANS ──
 (function fetchLoans() {
   var API = 'https://manbi-backend.onrender.com/api';
@@ -864,74 +951,102 @@ function submitSupport(){
   var empty = document.getElementById('loansEmpty');
   if (!grid) return;
 
+  // Demo loans shown if backend is unavailable (Render free tier sleeps)
+  var DEMO_LOANS = [
+    { entrepreneur_name: 'Abena Mensah', sector: 'Fashion', location: 'Kumasi', purpose: 'Expand my kente fabric stall to stock imported lace for wedding season.', goal_amount: 800, amount_raised: 560, loan_term_months: 6 },
+    { entrepreneur_name: 'Kwame Asante', sector: 'Farming', location: 'Tamale', purpose: 'Purchase fertiliser and irrigation pipes for the upcoming maize planting season.', goal_amount: 1200, amount_raised: 390, loan_term_months: 8 },
+    { entrepreneur_name: 'Ama Darkoa', sector: 'Food', location: 'Accra', purpose: 'Buy a chest freezer to keep my waakye fresh and serve the morning rush in Madina.', goal_amount: 600, amount_raised: 480, loan_term_months: 5 }
+  ];
+
+  function renderLoans(loans) {
+    grid.innerHTML = '';
+    var emojiMap = {food:'🍲',fashion:'👗',farming:'🌾',tech:'💻',beauty:'💄',transport:'🚐',retail:'🛍',health:'💊'};
+    loans.forEach(function(loan) {
+      var raised = parseFloat(loan.amount_raised || loan.funded_amount || 0);
+      var goal   = parseFloat(loan.goal_amount || 1);
+      var pct    = Math.min(100, Math.round((raised / goal) * 100));
+      var emoji  = emojiMap[(loan.sector||'').toLowerCase()] || '🏪';
+      var card = document.createElement('div');
+      card.className = 'loan-card';
+      card.innerHTML =
+        (loan.profile_photo_url
+          ? '<img class="loan-avatar" src="' + loan.profile_photo_url + '" alt="' + loan.entrepreneur_name + '" loading="lazy">'
+          : '<div class="loan-avatar-placeholder">' + emoji + '</div>') +
+        '<div class="loan-body">' +
+          '<div class="loan-meta">' +
+            '<span class="loan-tag">' + (loan.sector || 'Business') + '</span>' +
+            '<span class="loan-tag" style="background:#F5F0FF;color:#7C3AED">' + (loan.location || 'Ghana') + '</span>' +
+          '</div>' +
+          '<div class="loan-name">' + loan.entrepreneur_name + (loan.initials ? ' (' + loan.initials + ')' : '') + '</div>' +
+          '<div class="loan-purpose">' + (loan.purpose || loan.narrative || '') + '</div>' +
+          '<div class="loan-progress-wrap">' +
+            '<div class="loan-amounts">' +
+              '<span class="loan-raised">GHS ' + raised.toLocaleString() + ' raised</span>' +
+              '<span class="loan-goal">of GHS ' + parseFloat(goal).toLocaleString() + '</span>' +
+            '</div>' +
+            '<div class="loan-bar-bg"><div class="loan-bar-fill" style="width:' + pct + '%"></div></div>' +
+            '<div class="loan-pct">' + pct + '% funded · ' + (loan.loan_term_months || 6) + '-month repayment</div>' +
+          '</div>' +
+          '<div class="loan-foot">' +
+            '<button class="btn-fund" onclick="window.location.href=\'manbi-lender-auth.html\'">Fund this loan</button>' +
+            '<button class="btn-fund-ghost" onclick="window.location.href=\'manbi-lender-auth.html\'">Learn more</button>' +
+          '</div>' +
+        '</div>';
+      grid.appendChild(card);
+    });
+    // Trigger stagger animation — cards are injected after IntersectionObserver runs
+    grid.classList.add('visible');
+    setTimeout(function() {
+      document.querySelectorAll('.loan-bar-fill').forEach(function(b) {
+        var w = b.style.width; b.style.width = '0';
+        setTimeout(function(){ b.style.width = w; }, 50);
+      });
+    }, 100);
+  }
+
+  // Try live backend with a 6-second timeout
+  var done = false;
+  var timer = setTimeout(function() {
+    if (!done) { done = true; renderLoans(DEMO_LOANS); }
+  }, 6000);
+
   fetch(API + '/loans?status=active&limit=6')
     .then(function(r) { return r.json(); })
     .then(function(loans) {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
       if (!loans || loans.length === 0) {
-        grid.style.display = 'none';
-        empty.style.display = 'block';
-        return;
+        renderLoans(DEMO_LOANS);
+      } else {
+        renderLoans(loans);
       }
-      grid.innerHTML = '';
-      loans.forEach(function(loan) {
-        var raised = parseFloat(loan.amount_raised || loan.funded_amount || 0);
-        var goal   = parseFloat(loan.goal_amount || 1);
-        var pct    = Math.min(100, Math.round((raised / goal) * 100));
-        var emoji  = {food:'🍲',fashion:'👗',farming:'🌾',tech:'💻',beauty:'💄',transport:'🚐',retail:'🛍',health:'💊'}[
-                      (loan.sector||'').toLowerCase()] || '🏪';
-        var card = document.createElement('div');
-        card.className = 'loan-card';
-        card.innerHTML =
-          (loan.profile_photo_url
-            ? '<img class="loan-avatar" src="' + loan.profile_photo_url + '" alt="' + loan.entrepreneur_name + '" loading="lazy">'
-            : '<div class="loan-avatar-placeholder">' + emoji + '</div>') +
-          '<div class="loan-body">' +
-            '<div class="loan-meta">' +
-              '<span class="loan-tag">' + (loan.sector || 'Business') + '</span>' +
-              '<span class="loan-tag" style="background:#F5F0FF;color:#7C3AED">' + (loan.location || 'Ghana') + '</span>' +
-            '</div>' +
-            '<div class="loan-name">' + loan.entrepreneur_name + (loan.initials ? ' (' + loan.initials + ')' : '') + '</div>' +
-            '<div class="loan-purpose">' + (loan.purpose || loan.narrative || '') + '</div>' +
-            '<div class="loan-progress-wrap">' +
-              '<div class="loan-amounts">' +
-                '<span class="loan-raised">GHS ' + raised.toLocaleString() + ' raised</span>' +
-                '<span class="loan-goal">of GHS ' + parseFloat(goal).toLocaleString() + '</span>' +
-              '</div>' +
-              '<div class="loan-bar-bg"><div class="loan-bar-fill" style="width:' + pct + '%"></div></div>' +
-              '<div class="loan-pct">' + pct + '% funded · ' + (loan.loan_term_months || 6) + '-month repayment</div>' +
-            '</div>' +
-            '<div class="loan-foot">' +
-              '<button class="btn-fund" onclick="window.location.href='manbi-lender-auth.html'">Fund this loan</button>' +
-              '<button class="btn-fund-ghost" onclick="window.location.href='manbi-lender-auth.html'">Learn more</button>' +
-            '</div>' +
-          '</div>';
-        grid.appendChild(card);
-      });
-      // Animate bars after render
-      setTimeout(function() {
-        document.querySelectorAll('.loan-bar-fill').forEach(function(b) {
-          var w = b.style.width; b.style.width = '0'; 
-          setTimeout(function(){ b.style.width = w; }, 50);
-        });
-      }, 100);
     })
     .catch(function() {
-      // Backend sleeping or error — show empty gracefully
-      grid.style.display = 'none';
-      empty.style.display = 'block';
+      if (!done) { done = true; clearTimeout(timer); renderLoans(DEMO_LOANS); }
     });
 })();
+</script>
 
 
 // ── SCROLL REVEAL ──
 (function(){
-  var els = document.querySelectorAll('.reveal,.reveal-left,.reveal-scale,.stagger-children');
+  var els = document.querySelectorAll('.reveal,.reveal-left,.reveal-scale,.stagger-children,.impact-strip,.steps,.testi-grid,.punch');
   var io = new IntersectionObserver(function(entries){
     entries.forEach(function(e){
       if(e.isIntersecting){e.target.classList.add('visible');io.unobserve(e.target);}
     });
   },{threshold:.15});
   els.forEach(function(el){io.observe(el);});
+
+  // Animate sec-labels on scroll
+  var labels = document.querySelectorAll('.sec-label');
+  var io2 = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){e.target.classList.add('animate');io2.unobserve(e.target);}
+    });
+  },{threshold:.5});
+  labels.forEach(function(l){io2.observe(l);});
 })();
 
 // ── HERO STAT COUNTER ──
