@@ -578,16 +578,16 @@ nav{background:#fff!important;border-bottom:1px solid var(--ink12);min-height:62
 
 <script>
 // ── DATA ──
-const OPEN_LOANS = [
+let OPEN_LOANS = [
   {id:'km',av:'KM',name:'Kwame Mensah',loc:'Tamale, Northern Region',sector:'farming',purpose:'Buying fertilizer and seeds for the coming maize season before the rains begin.',raised:780,goal:1000,pct:78},
   {id:'as',av:'AS',name:'Ama Serwaa',loc:'Kumasi, Ashanti Region',sector:'farming',purpose:'A water pump to irrigate her tomato farm through the dry season and triple her yield.',raised:420,goal:800,pct:53},
   {id:'ab',av:'AB',name:'Abena Boateng',loc:'Sunyani, Bono Region',sector:'retail',purpose:'Stocking her market stall with goods ahead of the busy Christmas trading season.',raised:900,goal:1200,pct:75},
-  {id:'ya',av:'YA',name:'Yaa Asantewaa Sch.',loc:'Ejura, Ashanti Region',sector:'education',purpose:'Building a small library corner for the community's children with books and learning tools.',raised:150,goal:600,pct:25},
+  {id:'ya',av:'YA',name:'Yaa Asantewaa Sch.',loc:'Ejura, Ashanti Region',sector:'education',purpose:'Building a small library corner for the community\'s children with books and learning tools.',raised:150,goal:600,pct:25},
   {id:'bk',av:'BK',name:'Bernard Kusi',loc:'Cape Coast, Central Region',sector:'food',purpose:'Buying a chest freezer to preserve fish and expand his smoked fish business to more markets.',raised:600,goal:1500,pct:40},
   {id:'ep',av:'EP',name:'Esi Poku',loc:'Takoradi, Western Region',sector:'retail',purpose:'Purchasing sewing materials and a new machine to expand her dressmaking business.',raised:350,goal:700,pct:50},
 ];
 
-const MY_LOANS = [
+let MY_LOANS = [
   {av:'AM',name:'Auntie Martha',loc:'Bogoso, Western Region · Retail',contributed:50,status:'repaid',repayPct:100,color:'#2AB08A'},
   {av:'KM',name:'Kwame Mensah',loc:'Tamale, Northern Region · Farming',contributed:120,status:'active',repayPct:40,color:'#2AB08A'},
   {av:'AB',name:'Abena Boateng',loc:'Sunyani, Bono Region · Retail',contributed:80,status:'active',repayPct:0,color:'#F5C842'},
@@ -640,18 +640,20 @@ function loadDashboard(token) {
   .then(function(r){ return r.json(); })
   .then(function(loans) {
     if (Array.isArray(loans) && loans.length > 0) {
-      // Map API response to our format
       OPEN_LOANS = loans.map(function(l) {
+        var raised = parseFloat(l.amount_raised || l.raised || 0);
+        var goal   = parseFloat(l.goal_amount || 1);
+        var pct    = Math.min(100, Math.round((raised / goal) * 100));
         return {
-          id: l.id,
-          av: l.initials || l.entrepreneur_name.substring(0,2).toUpperCase(),
-          name: l.entrepreneur_name,
-          loc: l.location,
-          sector: l.sector,
-          purpose: l.purpose,
-          raised: parseFloat(l.raised) || 0,
-          goal: parseFloat(l.goal_amount),
-          pct: parseInt(l.pct_funded) || 0
+          id:      l.id,
+          av:      l.initials || (l.entrepreneur_name || '??').substring(0,2).toUpperCase(),
+          name:    l.entrepreneur_name || '',
+          loc:     l.location || '',
+          sector:  (l.sector || '').toLowerCase(),
+          purpose: l.purpose || l.narrative || '',
+          raised:  raised,
+          goal:    goal,
+          pct:     pct
         };
       });
     }
@@ -665,14 +667,16 @@ function loadDashboard(token) {
   .then(function(loans) {
     if (Array.isArray(loans) && loans.length > 0) {
       MY_LOANS = loans.map(function(l) {
+        var raised = parseFloat(l.amount_raised || l.raised || 0);
+        var goal   = parseFloat(l.goal_amount || 1);
         return {
-          av: l.initials || l.entrepreneur_name.substring(0,2).toUpperCase(),
-          name: l.entrepreneur_name,
-          loc: l.location + ' · ' + l.sector,
-          contributed: parseFloat(l.my_contribution),
-          status: l.loan_status === 'repaid' ? 'repaid' : 'active',
-          repayPct: parseInt(l.pct_funded) || 0,
-          color: '#2AB08A'
+          av:          l.initials || (l.entrepreneur_name || '??').substring(0,2).toUpperCase(),
+          name:        l.entrepreneur_name || '',
+          loc:         (l.location || '') + ' · ' + (l.sector || ''),
+          contributed: parseFloat(l.my_contribution || l.amount || 0),
+          status:      l.loan_status === 'repaid' ? 'repaid' : 'active',
+          repayPct:    Math.min(100, Math.round((raised / goal) * 100)),
+          color:       '#2AB08A'
         };
       });
     }
