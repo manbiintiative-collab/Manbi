@@ -525,12 +525,33 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:40px 8%;display
 <section class="loans-sec" id="loans">
   <div class="loans-header">
     <div class="sec-label" style="color:var(--t500)">Live Now</div>
-    <h2 class="loans-title">Entrepreneurs waiting for you</h2>
-    <p class="loans-sub">Every listing below is a real person, a real business, a real dream. Fund the remaining amount!</p>
+    <h2 class="loans-title">Fund a business, back a dream</h2>
+    <p class="loans-sub">Every profile below is a verified local entrepreneur. Fund the remaining amount!</p>
   </div>
+
+  <!-- Featured Story card -->
+  <div id="featuredCard" style="margin:0 0 32px;border-radius:18px;overflow:hidden;border:1.5px solid var(--ink12);display:flex;flex-direction:column;background:#fff;">
+    <!-- video placeholder — swap src for real YouTube embed when ready -->
+    <div style="position:relative;background:var(--t700);padding-bottom:40%;min-height:220px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;">
+      <div style="width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><polygon points="10,7 22,14 10,21" fill="#fff"/></svg>
+      </div>
+      <div style="font-size:13px;color:rgba(255,255,255,.5);font-weight:300;">Video coming soon</div>
+      <div style="position:absolute;top:14px;left:16px;background:#F5C842;color:#0F1C17;font-size:10px;font-weight:600;padding:3px 10px;border-radius:50px;text-transform:uppercase;letter-spacing:.4px;">⭐ Top Story</div>
+    </div>
+    <div style="padding:18px 20px 20px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+      <div>
+        <div id="featuredName" style="font-family:'DM Serif Display',Georgia,serif;font-size:20px;color:#0F1C17;margin-bottom:4px;">Loading…</div>
+        <div id="featuredLoc" style="font-size:13px;color:rgba(15,28,23,.5);margin-bottom:8px;"></div>
+        <div id="featuredPurpose" style="font-size:14px;color:rgba(15,28,23,.7);line-height:1.6;max-width:560px;"></div>
+      </div>
+      <button id="featuredBtn" onclick="window.location.href='manbi-lender-auth.html'" style="flex-shrink:0;padding:12px 24px;background:var(--t500);color:#fff;border:none;border-radius:50px;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap;">Fund this loan →</button>
+    </div>
+  </div>
+
+  <!-- Two live loan cards -->
   <div class="loans-grid stagger-children" id="loansGrid">
     <!-- skeleton cards while loading -->
-    <div class="loan-card skeleton-card"><div class="sk-img"></div><div class="sk-line sk-wide"></div><div class="sk-line sk-med"></div><div class="sk-line sk-narrow"></div><div class="sk-bar"></div></div>
     <div class="loan-card skeleton-card"><div class="sk-img"></div><div class="sk-line sk-wide"></div><div class="sk-line sk-med"></div><div class="sk-line sk-narrow"></div><div class="sk-bar"></div></div>
     <div class="loan-card skeleton-card"><div class="sk-img"></div><div class="sk-line sk-wide"></div><div class="sk-line sk-med"></div><div class="sk-line sk-narrow"></div><div class="sk-bar"></div></div>
   </div>
@@ -600,80 +621,6 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:40px 8%;display
       <div style="font-size:11px;color:var(--ink60);margin-top:5px">Top 5% of Ghanaian change-makers 🇬🇭</div>
     </div>
   </div>
-</section>
-
-<!-- DOCUMENTARIES -->
-<section class="docs-sec" id="stories">
-  <div class="docs-header">
-    <div>
-      <div class="sec-label" style="color:#F5C842">Their stories, in their words</div>
-      <h2 style="color:#fff">Real people.<br>Real impact.</h2>
-      <p>We visit entrepreneurs in their communities and document the change your support creates. Every story here is real.</p>
-    </div>
-    <a href="https://youtube.com/@manbi" target="_blank" class="yt-link"><div class="yt-icon"></div>Watch on YouTube</a>
-  </div>
-
-  <div style="padding:0 8% 0;display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:16px;align-items:start;">
-
-    <!-- SLOT 1 — YouTube video (replace VIDEO_ID with your real YouTube video ID) -->
-    <div style="border-radius:16px;overflow:hidden;position:relative;background:#000;">
-      <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;">
-        <iframe
-          id="mainStoryVideo"
-          src="https://www.youtube.com/embed/dQw4w9WgXcQ?rel=0&modestbranding=1&color=white"
-          title="Manbi — A story of change"
-          style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;"
-          allowfullscreen>
-        </iframe>
-      </div>
-      <div style="padding:14px 16px;background:rgba(7,46,36,.95);">
-        <div style="display:inline-block;background:#F5C842;color:#0F1C17;font-size:10px;font-weight:600;padding:2px 9px;border-radius:50px;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px;">Featured Story</div>
-        <div id="mainStoryTitle" style="font-size:15px;font-weight:500;color:#fff;line-height:1.4;">From one oven to a bakery empire</div>
-        <div id="mainStoryLoc" style="font-size:12px;color:rgba(255,255,255,.6);margin-top:3px;">Auntie Martha · Bogoso, Western Region</div>
-      </div>
-    </div>
-
-    <!-- SLOT 2 — Photo card -->
-    <div style="border-radius:16px;overflow:hidden;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);">
-      <div style="height:180px;background:linear-gradient(135deg,#0D5C48,#1A9070);display:flex;align-items:center;justify-content:center;font-size:52px;">🌾</div>
-      <div style="padding:14px 16px;">
-        <div style="display:inline-block;background:rgba(245,200,66,.15);color:#F5C842;font-size:10px;font-weight:600;padding:2px 9px;border-radius:50px;margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px;">Farming</div>
-        <div style="font-size:14px;font-weight:500;color:#fff;margin-bottom:4px;">Kwame Mensah</div>
-        <div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:10px;">Tamale, Northern Region</div>
-        <div style="font-size:13px;color:rgba(255,255,255,.75);line-height:1.6;font-style:italic;">"The fertilizer is in the soil. My family will eat well this year."</div>
-        <div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,.4);">GHS 1,000 loan · Fully repaid</div>
-      </div>
-    </div>
-
-    <!-- SLOT 3 — Photo card -->
-    <div style="border-radius:16px;overflow:hidden;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);">
-      <div style="height:180px;background:linear-gradient(135deg,#534AB7,#7B6FD4);display:flex;align-items:center;justify-content:center;font-size:52px;">🍅</div>
-      <div style="padding:14px 16px;">
-        <div style="display:inline-block;background:rgba(245,200,66,.15);color:#F5C842;font-size:10px;font-weight:600;padding:2px 9px;border-radius:50px;margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px;">Farming</div>
-        <div style="font-size:14px;font-weight:500;color:#fff;margin-bottom:4px;">Ama Serwaa</div>
-        <div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:10px;">Kumasi, Ashanti Region</div>
-        <div style="font-size:13px;color:rgba(255,255,255,.75);line-height:1.6;font-style:italic;">"My tomatoes grew when everyone else's farms dried up."</div>
-        <div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,.4);">GHS 800 loan · Active</div>
-      </div>
-    </div>
-
-    <!-- SLOT 4 — Photo card -->
-    <div style="border-radius:16px;overflow:hidden;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);">
-      <div style="height:180px;background:linear-gradient(135deg,#BA7517,#E6A800);display:flex;align-items:center;justify-content:center;font-size:52px;">🛒</div>
-      <div style="padding:14px 16px;">
-        <div style="display:inline-block;background:rgba(245,200,66,.15);color:#F5C842;font-size:10px;font-weight:600;padding:2px 9px;border-radius:50px;margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px;">Retail</div>
-        <div style="font-size:14px;font-weight:500;color:#fff;margin-bottom:4px;">Abena Boateng</div>
-        <div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:10px;">Sunyani, Bono Region</div>
-        <div style="font-size:13px;color:rgba(255,255,255,.75);line-height:1.6;font-style:italic;">"I made enough profit to repay and save for the next season."</div>
-        <div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,.4);">GHS 1,200 loan · Fully repaid</div>
-      </div>
-    </div>
-
-  </div>
-
-  <div style="padding:20px 8% 32px;">
-  </div>
-
 </section>
 
 
@@ -958,10 +905,29 @@ function submitSupport(){
     { entrepreneur_name: 'Ama Darkoa', sector: 'Food', location: 'Accra', purpose: 'Buy a chest freezer to keep my waakye fresh and serve the morning rush in Madina.', goal_amount: 600, amount_raised: 480, loan_term_months: 5 }
   ];
 
+  function populateFeatured(loan) {
+    var el = document.getElementById('featuredCard');
+    if (!el || !loan) return;
+    var nameEl = document.getElementById('featuredName');
+    var locEl  = document.getElementById('featuredLoc');
+    var purpEl = document.getElementById('featuredPurpose');
+    if (nameEl) nameEl.textContent = loan.entrepreneur_name || '';
+    if (locEl)  locEl.textContent  = (loan.location || '') + (loan.sector ? ' · ' + loan.sector : '');
+    if (purpEl) purpEl.textContent = loan.purpose || loan.narrative || '';
+  }
+
   function renderLoans(loans) {
+    // Featured card = first loan
+    populateFeatured(loans[0]);
+    // Grid = next 2 loans
+    var gridLoans = loans.slice(1, 3);
     grid.innerHTML = '';
+    if (gridLoans.length === 0) {
+      empty.style.display = 'block';
+      return;
+    }
     var emojiMap = {food:'🍲',fashion:'👗',farming:'🌾',tech:'💻',beauty:'💄',transport:'🚐',retail:'🛍',health:'💊'};
-    loans.forEach(function(loan) {
+    gridLoans.forEach(function(loan) {
       var raised = parseFloat(loan.amount_raised || loan.funded_amount || 0);
       var goal   = parseFloat(loan.goal_amount || 1);
       var pct    = Math.min(100, Math.round((raised / goal) * 100));
@@ -994,7 +960,7 @@ function submitSupport(){
         '</div>';
       grid.appendChild(card);
     });
-    // Trigger stagger animation — cards are injected after IntersectionObserver runs
+    // Trigger stagger animation
     grid.classList.add('visible');
     setTimeout(function() {
       document.querySelectorAll('.loan-bar-fill').forEach(function(b) {
