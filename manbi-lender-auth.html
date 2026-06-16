@@ -565,8 +565,35 @@ function submitSignup(){
 }
 
 /* ── GOOGLE AUTH ── */
-function googleAuth(){
-  alert('Google sign-in coming soon! Please use email signup for now.');
+function handleGoogleSignIn(response){
+  var errEl=document.getElementById('signupErr');
+  var errTxt=document.getElementById('signupErrText');
+
+  fetch(API+'/auth/google',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({credential:response.credential})
+  })
+  .then(function(res){return res.json();})
+  .then(function(data){
+    if(data.error){
+      errTxt.textContent=data.error;
+      errEl.classList.add('show');
+      return;
+    }
+    sessionStorage.setItem('manbi_token',data.token);
+    sessionStorage.setItem('manbi_lender',JSON.stringify(data.user));
+    currentUser=data.user;
+    if(data.isNew){
+      startOnboarding(data.user.fname);
+    } else {
+      window.location.href='manbi-dashboard.html';
+    }
+  })
+  .catch(function(){
+    errTxt.textContent='Network error. Please check your connection and try again.';
+    errEl.classList.add('show');
+  });
 }
 
 /* ── LOGIN ── */
