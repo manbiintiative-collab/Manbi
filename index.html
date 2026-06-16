@@ -429,27 +429,21 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:40px 8%;display
 </head>
 <body>
 
-<!-- Netlify form detection for interest modal -->
-<form name="borrower-interest-modal" netlify netlify-honeypot="bot-field" style="display:none">
-  <input type="text" name="full_name">
-  <input type="tel" name="phone">
-  <input type="text" name="community">
-  <input type="text" name="amount_range">
-  <textarea name="purpose"></textarea>
-</form>
-  <input name="full-name">
-  <input name="mobile-number">
-  <input name="community">
-  <input name="loan-amount">
-  <textarea name="purpose"></textarea>
-</form>
-
-<!-- Netlify form detection for support modal -->
-<form name="support-donation" netlify netlify-honeypot="bot-field" hidden style="display:none">
-  <input name="amount">
-  <input name="network">
-  <input name="phone">
-</form>
+<!-- Netlify Forms: hidden detection forms (aria-hidden keeps them invisible to browser and screen readers) -->
+<div aria-hidden="true" style="position:absolute;overflow:hidden;width:0;height:0;pointer-events:none">
+  <form name="borrower-interest-modal" data-netlify="true" netlify-honeypot="bot-field">
+    <input type="text" name="full_name">
+    <input type="tel" name="phone">
+    <input type="text" name="community">
+    <input type="text" name="amount_range">
+    <textarea name="purpose"></textarea>
+  </form>
+  <form name="support-donation" data-netlify="true" netlify-honeypot="bot-field">
+    <input name="amount">
+    <input name="network">
+    <input name="phone">
+  </form>
+</div>
 
 <div class="kente"></div>
 
