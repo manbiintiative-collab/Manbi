@@ -1,0 +1,5 @@
+/login          /manbi-lender-auth.html     200
+/dashboard      /manbi-dashboard.html       200
+/apply          /manbi-apply.html           200
+/admin          /manbi-admin.html           200
+/agent          /manbi-agent-login.html     200
