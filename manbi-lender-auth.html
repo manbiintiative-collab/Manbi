@@ -587,7 +587,7 @@ function handleGoogleSignIn(response){
     if(data.isNew){
       startOnboarding(data.user.fname);
     } else {
-      window.location.href='manbi-dashboard.html';
+      window.location.href='/dashboard';
     }
   })
   .catch(function(){
@@ -621,7 +621,7 @@ function submitLogin(){
     if(data.error){errTxt.textContent=data.error;errEl.classList.add('show');return;}
     sessionStorage.setItem('manbi_token',data.token);
     sessionStorage.setItem('manbi_lender',JSON.stringify(data.user));
-    window.location.href='manbi-dashboard.html';
+    window.location.href='/dashboard';
   })
   .catch(function(){
     btn.textContent='Sign in to Manbi \u2192';
@@ -672,13 +672,13 @@ function selSquad(el,squad){
 
 /* ── FINISH ── */
 function goToDashboard(action){
-  window.location.href='manbi-dashboard.html';
+  window.location.href='/dashboard';
 }
 
 /* ── CHECK SESSION ── */
 window.addEventListener('load',function(){
   var session=sessionStorage.getItem('manbi_lender');
-  if(session){window.location.href='manbi-dashboard.html';return;}
+  if(session){window.location.href='/dashboard';return;}
   document.getElementById('su-fname').addEventListener('input',function(){
     var fn=document.getElementById('su-fname').value||'Kofi';
     var ln=document.getElementById('su-lname').value||'Asante';

@@ -459,7 +459,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:40px 8%;display
     <div class="nav-right">
       <button class="btn-support" onclick="openSupport()">💛 Support Manbi</button>
       <button class="btn-nav-ghost" onclick="openInterest()">Apply for a loan</button>
-      <button class="btn-nav-primary" onclick="window.location.href='manbi-lender-auth.html'">Start lending →</button>
+      <button class="btn-nav-primary" onclick="window.location.href='/login'">Start lending →</button>
     </div>
     <button class="hamburger" onclick="toggleDrawer()" aria-label="Menu">
       <span></span><span></span><span></span>
@@ -474,7 +474,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:40px 8%;display
   <a href="#community" onclick="closeDrawer()">Community</a>
   <a href="#stories" onclick="closeDrawer()">Stories</a>
   <a href="#testimonials" onclick="closeDrawer()">Testimonials</a>
-  <button class="d-primary" onclick="window.location.href='manbi-lender-auth.html';closeDrawer()">Start lending →</button>
+  <button class="d-primary" onclick="window.location.href='/login';closeDrawer()">Start lending →</button>
   <button class="d-support" onclick="openSupport();closeDrawer()">💛 Support Manbi</button>
   <button style="color:var(--t500);border:none;background:none;font-size:15px;text-align:left;padding:14px 0;border-bottom:none" onclick="openInterest();closeDrawer()">Apply for a loan</button>
 </div>
@@ -488,7 +488,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:40px 8%;display
     <h1>Fund the <em>future</em><br>of rural Ghana</h1>
     <p class="hero-sub">Manbi connects everyday Ghanaians with small business owners who need a hand up — not a loan shark. Lend from GHS 10, get repaid, and do it again.</p>
     <div class="hero-btns">
-      <button class="btn-hero-primary" onclick="window.location.href='manbi-lender-auth.html'">Start lending today →</button>
+      <button class="btn-hero-primary" onclick="window.location.href='/login'">Start lending today →</button>
       <button class="btn-hero-ghost" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">See how it works</button>
     </div>
     <div class="hero-stats">
@@ -512,7 +512,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:40px 8%;display
     <p class="punch-sub">No interest. No middlemen. Just Ghanaians lifting each other up — one business at a time.</p>
   </div>
   <div class="punch-btns" style="position:relative;z-index:2">
-    <button class="btn-white" onclick="window.location.href='manbi-lender-auth.html'">Start lending — it's free</button>
+    <button class="btn-white" onclick="window.location.href='/login'">Start lending — it's free</button>
     <button class="btn-ghost-w" onclick="openInterest()">Apply for a loan →</button>
     <button class="btn-support-w" onclick="openSupport()">💛 Support Manbi</button>
   </div>
@@ -542,7 +542,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:40px 8%;display
         <div id="featuredLoc" style="font-size:13px;color:rgba(15,28,23,.5);margin-bottom:8px;"></div>
         <div id="featuredPurpose" style="font-size:14px;color:rgba(15,28,23,.7);line-height:1.6;max-width:560px;"></div>
       </div>
-      <button id="featuredBtn" onclick="window.location.href='manbi-lender-auth.html'" style="flex-shrink:0;padding:12px 24px;background:var(--t500);color:#fff;border:none;border-radius:50px;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap;">Fund this loan &rarr;</button>
+      <button id="featuredBtn" onclick="window.location.href='/login'" style="flex-shrink:0;padding:12px 24px;background:var(--t500);color:#fff;border:none;border-radius:50px;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap;">Fund this loan &rarr;</button>
     </div>
   </div>
 
@@ -556,7 +556,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:40px 8%;display
     <p>No active listings yet &mdash; check back soon or <button onclick="openInterest()" class="link-btn">apply for a loan</button>.</p>
   </div>
   <div style="text-align:center;margin-top:40px">
-    <button class="btn-hero-ghost" style="color:var(--t500);border-color:var(--t300);background:#fff" onclick="window.location.href='manbi-lender-auth.html'">See all loans &amp; start lending &rarr;</button>
+    <button class="btn-hero-ghost" style="color:var(--t500);border-color:var(--t300);background:#fff" onclick="window.location.href='/login'">See all loans &amp; start lending &rarr;</button>
   </div>
 </section>
 
@@ -955,8 +955,8 @@ function submitSupport(){
             '<div class="loan-pct">' + pct + '% funded · ' + (loan.loan_term_months || 6) + '-month repayment</div>' +
           '</div>' +
           '<div class="loan-foot">' +
-            '<button class="btn-fund" onclick="window.location.href=\'manbi-lender-auth.html\'">Fund this loan</button>' +
-            '<button class="btn-fund-ghost" onclick="window.location.href=\'manbi-lender-auth.html\'">Learn more</button>' +
+            '<button class="btn-fund" onclick="window.location.href=\'/login\'">Fund this loan</button>' +
+            '<button class="btn-fund-ghost" onclick="window.location.href=\'/login\'">Learn more</button>' +
           '</div>' +
         '</div>';
       grid.appendChild(card);

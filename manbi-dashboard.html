@@ -605,7 +605,7 @@ var API = 'https://manbi-backend.onrender.com/api';
 window.addEventListener('load', function() {
   var session = sessionStorage.getItem('manbi_lender');
   var token = sessionStorage.getItem('manbi_token');
-  if (!session || !token) { window.location.href = 'manbi-lender-auth.html'; return; }
+  if (!session || !token) { window.location.href = '/login'; return; }
 
   try {
     var u = JSON.parse(session);
@@ -873,7 +873,7 @@ function submitCheckout(){
   var payMethod = selectedPayEl ? selectedPayEl.textContent.replace('📱 ','').replace('🏦 ','') : 'MTN MoMo';
   var phone = document.getElementById('phoneIn').value;
 
-  if(!token){ window.location.href='manbi-lender-auth.html'; return; }
+  if(!token){ window.location.href='/login'; return; }
 
   var btn = document.getElementById('confirmBtn');
   btn.textContent = 'Processing...';
@@ -919,7 +919,7 @@ function submitTopup(){document.getElementById('tu1').style.display='none';docum
 function signOut(){
   if(confirm('Sign out of Manbi?')){
     sessionStorage.removeItem('manbi_lender'); sessionStorage.removeItem('manbi_token');
-    window.location.href='index.html';
+    window.location.href='/';
   }
 }
 </script>
