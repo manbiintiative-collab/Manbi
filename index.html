@@ -519,7 +519,46 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:40px 8%;display
 </section>
 
 
-<!-- LIVE LOAN LISTINGS -->\n<section class=\"loans-sec\" id=\"loans\">\n  <div class=\"loans-header\">\n    <div class=\"sec-label\" style=\"color:var(--t500)\">Live Now</div>\n    <h2 class=\"loans-title\">Fund a business, back a dream</h2>\n    <p class=\"loans-sub\">Every profile below is a verified local entrepreneur. Fund the remaining amount!</p>\n  </div>\n\n  <!-- Featured Story card -->\n  <div id=\"featuredCard\" style=\"margin:0 0 32px;border-radius:18px;overflow:hidden;border:1.5px solid var(--ink12);display:flex;flex-direction:column;background:#fff;\">\n    <div style=\"position:relative;background:var(--t700);padding-bottom:40%;min-height:220px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;\">\n      <div style=\"width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;\">\n        <svg width=\"28\" height=\"28\" viewBox=\"0 0 28 28\" fill=\"none\"><polygon points=\"10,7 22,14 10,21\" fill=\"#fff\"/></svg>\n      </div>\n      <div style=\"font-size:13px;color:rgba(255,255,255,.5);font-weight:300;\">Video coming soon</div>\n      <div style=\"position:absolute;top:14px;left:16px;background:#F5C842;color:#0F1C17;font-size:10px;font-weight:600;padding:3px 10px;border-radius:50px;text-transform:uppercase;letter-spacing:.4px;\">⭐ Top Story</div>\n    </div>\n    <div style=\"padding:18px 20px 20px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;\">\n      <div>\n        <div id=\"featuredName\" style=\"font-family:\'DM Serif Display\',Georgia,serif;font-size:20px;color:#0F1C17;margin-bottom:4px;\">Loading…</div>\n        <div id=\"featuredLoc\" style=\"font-size:13px;color:rgba(15,28,23,.5);margin-bottom:8px;\"></div>\n        <div id=\"featuredPurpose\" style=\"font-size:14px;color:rgba(15,28,23,.7);line-height:1.6;max-width:560px;\"></div>\n      </div>\n      <button id=\"featuredBtn\" onclick=\"window.location.href=\'manbi-lender-auth.html\'\" style=\"flex-shrink:0;padding:12px 24px;background:var(--t500);color:#fff;border:none;border-radius:50px;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap;\">Fund this loan →</button>\n    </div>\n  </div>\n\n  <!-- Two live loan cards -->\n  <div class=\"loans-grid stagger-children\" id=\"loansGrid\">\n    <div class=\"loan-card skeleton-card\"><div class=\"sk-img\"></div><div class=\"sk-line sk-wide\"></div><div class=\"sk-line sk-med\"></div><div class=\"sk-line sk-narrow\"></div><div class=\"sk-bar\"></div></div>\n    <div class=\"loan-card skeleton-card\"><div class=\"sk-img\"></div><div class=\"sk-line sk-wide\"></div><div class=\"sk-line sk-med\"></div><div class=\"sk-line sk-narrow\"></div><div class=\"sk-bar\"></div></div>\n  </div>\n  <div class=\"loans-empty\" id=\"loansEmpty\" style=\"display:none\">\n    <div class=\"loans-empty-icon\">🌱</div>\n    <p>No active listings yet — check back soon or <button onclick=\"openInterest()\" class=\"link-btn\">apply for a loan</button>.</p>\n  </div>\n  <div style=\"text-align:center;margin-top:40px\">\n    <button class=\"btn-hero-ghost\" style=\"color:var(--t500);border-color:var(--t300);background:#fff\" onclick=\"window.location.href=\'manbi-lender-auth.html\'\">See all loans & start lending →</button>\n  </div>\n</section>
+<!-- LIVE LOAN LISTINGS -->
+<section class="loans-sec" id="loans">
+  <div class="loans-header">
+    <div class="sec-label" style="color:var(--t500)">Live Now</div>
+    <h2 class="loans-title">Fund a business, back a dream</h2>
+    <p class="loans-sub">Every profile below is a verified local entrepreneur. Fund the remaining amount!</p>
+  </div>
+
+  <!-- Featured Story card -->
+  <div id="featuredCard" style="margin:0 0 32px;border-radius:18px;overflow:hidden;border:1.5px solid var(--ink12);display:flex;flex-direction:column;background:#fff;">
+    <div style="position:relative;background:var(--t700);padding-bottom:40%;min-height:220px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;">
+      <div style="width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><polygon points="10,7 22,14 10,21" fill="#fff"/></svg>
+      </div>
+      <div style="font-size:13px;color:rgba(255,255,255,.5);font-weight:300;">Video coming soon</div>
+      <div style="position:absolute;top:14px;left:16px;background:#F5C842;color:#0F1C17;font-size:10px;font-weight:600;padding:3px 10px;border-radius:50px;text-transform:uppercase;letter-spacing:.4px;">&#11088; Top Story</div>
+    </div>
+    <div style="padding:18px 20px 20px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+      <div>
+        <div id="featuredName" style="font-family:'DM Serif Display',Georgia,serif;font-size:20px;color:#0F1C17;margin-bottom:4px;">Loading&hellip;</div>
+        <div id="featuredLoc" style="font-size:13px;color:rgba(15,28,23,.5);margin-bottom:8px;"></div>
+        <div id="featuredPurpose" style="font-size:14px;color:rgba(15,28,23,.7);line-height:1.6;max-width:560px;"></div>
+      </div>
+      <button id="featuredBtn" onclick="window.location.href='manbi-lender-auth.html'" style="flex-shrink:0;padding:12px 24px;background:var(--t500);color:#fff;border:none;border-radius:50px;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap;">Fund this loan &rarr;</button>
+    </div>
+  </div>
+
+  <!-- Two live loan cards -->
+  <div class="loans-grid stagger-children" id="loansGrid">
+    <div class="loan-card skeleton-card"><div class="sk-img"></div><div class="sk-line sk-wide"></div><div class="sk-line sk-med"></div><div class="sk-line sk-narrow"></div><div class="sk-bar"></div></div>
+    <div class="loan-card skeleton-card"><div class="sk-img"></div><div class="sk-line sk-wide"></div><div class="sk-line sk-med"></div><div class="sk-line sk-narrow"></div><div class="sk-bar"></div></div>
+  </div>
+  <div class="loans-empty" id="loansEmpty" style="display:none">
+    <div class="loans-empty-icon">&#127807;</div>
+    <p>No active listings yet &mdash; check back soon or <button onclick="openInterest()" class="link-btn">apply for a loan</button>.</p>
+  </div>
+  <div style="text-align:center;margin-top:40px">
+    <button class="btn-hero-ghost" style="color:var(--t500);border-color:var(--t300);background:#fff" onclick="window.location.href='manbi-lender-auth.html'">See all loans &amp; start lending &rarr;</button>
+  </div>
+</section>
 
 <!-- HOW IT WORKS -->
 <section class="section" id="how" style="overflow:hidden">
@@ -552,7 +591,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:40px 8%;display
   <div class="gamif-grid">
     <div class="gamif-features">
       <div class="gamif-feat"><div class="gi gi-t">🏆</div><div><div class="gf-title">Impact levels &amp; digital badges</div><p class="gf-desc">Start as a Seed Sower. Level up to Growth Mogul as you reinvest repayments. Share badges on WhatsApp Status.</p></div></div>
-      <div class="gamif-feat"><div class="gi gi-g">👥</div><div><div class="gf-title">Squad pools &amp; leaderboards</div><p class="gf-desc">Create or join a squad — Legon Tech, KNUST Pioneers, Corporate Accra. Compete on total community impact monthly.</p></div></div>
+      <div class="gamif-feat" style="opacity:.75;position:relative"><div class="gi gi-g">👥</div><div><div class="gf-title" style="display:flex;align-items:center;gap:8px">Squad pools &amp; leaderboards <span style="font-size:10px;font-weight:600;background:#F5C842;color:#0F1C17;padding:2px 8px;border-radius:50px;text-transform:uppercase;letter-spacing:.4px;">Coming Soon</span></div><p class="gf-desc">Create or join a squad — Legon Tech, KNUST Pioneers, Corporate Accra. Compete on total community impact monthly.</p></div></div>
       <div class="gamif-feat"><div class="gi gi-p">📹</div><div><div class="gf-title">Live entrepreneur updates</div><p class="gf-desc">15-second videos from your entrepreneurs — straight to your feed. See the fertilizer going into the soil.</p></div></div>
       <div class="gamif-feat"><div class="gi gi-t">🔄</div><div><div class="gf-title">Spare change round-ups</div><p class="gf-desc">Round up every MoMo transaction. When your vault hits GHS 50, we nudge you to put it to work.</p></div></div>
     </div>
@@ -677,7 +716,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:40px 8%;display
   </div>
 
 <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.07);font-size:11px;color:rgba(255,255,255,.3);line-height:1.7;max-width:800px;">
-  &copy; 2026 Manbi Initiative LBG. All rights reserved. &ldquo;Manbi&rdquo; is an independent social enterprise operated under Manbi Initiative (Company Limited by Guarantee, Ghana). We are completely distinct and maintain no legal affiliation, partnership, or association with any other registered corporate entities or LLCs using similar names in the official registry.
+  &copy; 2026 SC Manbi LBG. All rights reserved. &ldquo;Manbi&rdquo; is an independent social enterprise operated under SC Manbi LBG (Company Limited by Guarantee, Ghana). We are completely distinct and maintain no legal affiliation, partnership, or association with any other registered corporate entities or LLCs using similar names in the official registry.
 </div>
 </footer>
 
