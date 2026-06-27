@@ -559,10 +559,11 @@ nav{background:#fff!important;border-bottom:1px solid var(--ink12);min-height:62
       </div>
       <div class="field-lbl">Pay via</div>
       <div class="pay-methods">
-        <div class="pay-method selected" onclick="selPay(this)"><div class="pay-dot"></div><div class="pay-name">📱 MTN MoMo</div></div>
-        <div class="pay-method" onclick="selPay(this)"><div class="pay-dot"></div><div class="pay-name">📱 Vodafone Cash</div></div>
-        <div class="pay-method" onclick="selPay(this)"><div class="pay-dot"></div><div class="pay-name">📱 AirtelTigo</div></div>
-        <div class="pay-method" onclick="selPay(this)"><div class="pay-dot"></div><div class="pay-name">🏦 My Vault</div></div>
+        <div class="pay-method selected" onclick="selPay(this,'momo')"><div class="pay-dot"></div><div class="pay-name">📱 MTN MoMo</div></div>
+        <div class="pay-method" onclick="selPay(this,'momo')"><div class="pay-dot"></div><div class="pay-name">📱 Vodafone Cash</div></div>
+        <div class="pay-method" onclick="selPay(this,'momo')"><div class="pay-dot"></div><div class="pay-name">📱 AirtelTigo</div></div>
+        <div class="pay-method" onclick="selPay(this,'vault')"><div class="pay-dot"></div><div class="pay-name">🏦 My Vault</div></div>
+        <div class="pay-method" onclick="selPay(this,'card')"><div class="pay-dot"></div><div class="pay-name">💳 Visa / Mastercard</div></div>
       </div>
       <input class="phone-input" id="phoneIn" type="tel" placeholder="Enter your MoMo number e.g. 024 000 0000">
       <div class="fee-box" onclick="toggleFee()">
@@ -652,9 +653,10 @@ nav{background:#fff!important;border-bottom:1px solid var(--ink12);min-height:62
       </div>
       <div class="field-lbl">Pay via</div>
       <div class="pay-methods">
-        <div class="pay-method selected" onclick="selPay(this)"><div class="pay-dot"></div><div class="pay-name">📱 MTN MoMo</div></div>
-        <div class="pay-method" onclick="selPay(this)"><div class="pay-dot"></div><div class="pay-name">📱 Vodafone Cash</div></div>
-        <div class="pay-method" onclick="selPay(this)"><div class="pay-dot"></div><div class="pay-name">📱 AirtelTigo</div></div>
+        <div class="pay-method selected" onclick="selPay(this,'momo')"><div class="pay-dot"></div><div class="pay-name">📱 MTN MoMo</div></div>
+        <div class="pay-method" onclick="selPay(this,'momo')"><div class="pay-dot"></div><div class="pay-name">📱 Vodafone Cash</div></div>
+        <div class="pay-method" onclick="selPay(this,'momo')"><div class="pay-dot"></div><div class="pay-name">📱 AirtelTigo</div></div>
+        <div class="pay-method" onclick="selPay(this,'card')"><div class="pay-dot"></div><div class="pay-name">💳 Visa / Mastercard</div></div>
       </div>
       <input class="phone-input" type="tel" placeholder="Your MoMo number">
       <button class="m-confirm" onclick="submitTopup()">Top up vault →</button>
@@ -695,6 +697,7 @@ let curRepay = 'reinvest';
 
 // ── INIT ──
 var API = 'https://manbi-backend.onrender.com/api';
+var currentLoanId = null;
 
 window.addEventListener('load', function() {
   var session = sessionStorage.getItem('manbi_lender');
@@ -979,34 +982,38 @@ function renderMyLoans() {
 }
 
 // ── CHECKOUT ──
-const borrowers = {
-  km:{av:'KM',name:'Kwame Mensah',loc:'Tamale · Farming',pct:'78%'},
-  as:{av:'AS',name:'Ama Serwaa',loc:'Kumasi · Farming',pct:'53%'},
-  ab:{av:'AB',name:'Abena Boateng',loc:'Sunyani · Retail',pct:'75%'},
-  ya:{av:'YA',name:'Yaa Asantewaa Sch.',loc:'Ejura · Education',pct:'25%'},
-  bk:{av:'BK',name:'Bernard Kusi',loc:'Cape Coast · Food',pct:'40%'},
-  ep:{av:'EP',name:'Esi Poku',loc:'Takoradi · Retail',pct:'50%'},
-};
-
-function openCheckout(k) {
-  const b = borrowers[k]||borrowers.km;
-  document.getElementById('mAv').textContent=b.av;
-  document.getElementById('mName').textContent=b.name;
-  document.getElementById('mLoc').textContent=b.loc;
-  document.getElementById('mPct').textContent=b.pct;
+function openCheckout(id) {
+  var l = OPEN_LOANS.find(function(x){ return String(x.id) === String(id); });
+  var b = l || {av:'?', name:'Entrepreneur', loc:'Ghana', pct:0};
+  var avEl = document.getElementById('mAv');
+  if (b.profile_photo_url) {
+    avEl.innerHTML = '<img src="' + b.profile_photo_url + '" style="width:40px;height:40px;border-radius:50%;object-fit:cover">';
+  } else {
+    avEl.textContent = b.av || (b.name||'??').substring(0,2).toUpperCase();
+  }
+  document.getElementById('mName').textContent = b.name || '';
+  document.getElementById('mLoc').textContent = (b.loc || '') + (b.sector ? ' · ' + b.sector : '');
+  document.getElementById('mPct').textContent = (b.pct || 0) + '%';
   document.getElementById('co1').style.display='block';
   document.getElementById('co2').style.display='none';
   document.getElementById('lendAmt').value=50;
   feeOn=true;
   document.getElementById('feeCheck').classList.remove('off');
   updateSummary();
+  currentLoanId = id;
   document.getElementById('checkoutModal').classList.add('open');
   document.body.style.overflow='hidden';
 }
 function closeModal(id){document.getElementById(id).classList.remove('open');document.body.style.overflow='';}
-function selPay(el){
+function selPay(el, type){
   el.closest('.pay-methods').querySelectorAll('.pay-method').forEach(function(m){ m.classList.remove('selected'); });
   el.classList.add('selected');
+  var phoneIn = document.getElementById('phoneIn');
+  if (phoneIn) {
+    phoneIn.style.display = (type === 'momo') ? 'block' : 'none';
+    if (type === 'card') phoneIn.placeholder = '';
+    else phoneIn.placeholder = 'Enter your MoMo number e.g. 024 000 0000';
+  }
 }
 
 // ── REPAYMENT ──
