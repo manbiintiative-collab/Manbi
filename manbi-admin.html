@@ -596,14 +596,18 @@ function submitEntrepreneur() {
       video_url: video || null
     })
   })
-  .then(function(r) { return r.json(); })
-  .then(function(data) {
+  .then(function(r) {
     btn.textContent = '✓ Publish Loan Listing';
     btn.disabled = false;
-    if (data.error) { showToast(data.error, 'error'); return; }
-    showToast('✅ ' + name + ' is now live on Manbi!', 'success');
-    clearAddForm();
-    switchAdminTab('loans');
+    if (r.ok) {
+      showToast('✅ ' + name + ' is now live on Manbi!', 'success');
+      clearAddForm();
+      switchAdminTab('loans');
+    } else {
+      return r.json().then(function(data) {
+        showToast(data.error || 'Failed to publish. Please try again.', 'error');
+      });
+    }
   })
   .catch(function() {
     btn.textContent = '✓ Publish Loan Listing';
