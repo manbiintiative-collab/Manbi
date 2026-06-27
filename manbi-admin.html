@@ -328,6 +328,30 @@ input,select,textarea{font-family:var(--fb)}
         </div>
       </div>
 
+      <div class="form-card">
+        <div class="form-card-title">🤝 Field Partner <span style="font-size:13px;font-weight:400;color:var(--ink60)">(microfinance partner assisting this entrepreneur)</span></div>
+        <div class="form-grid">
+          <div>
+            <div class="f-label">Partner Name</div>
+            <input class="f-inp" id="add-partner-name" type="text" placeholder="e.g. United Vision MFI">
+          </div>
+          <div>
+            <div class="f-label">Partner Contact / Website</div>
+            <input class="f-inp" id="add-partner-contact" type="text" placeholder="e.g. unitedvision.com or +233 20 000 0000">
+          </div>
+        </div>
+        <div class="form-field">
+          <div class="f-label">Partner Description</div>
+          <textarea class="f-ta" id="add-partner-description" placeholder="Brief description of the partner organisation — what they do, where they operate, and how they support entrepreneurs on the ground." oninput="updateCount(this,'partnerDescCount',120,'words')"></textarea>
+          <div class="char-count"><span id="partnerDescCount">0</span>/120 words</div>
+        </div>
+        <div class="form-field">
+          <div class="f-label">Partner Logo URL</div>
+          <input class="f-inp" id="add-partner-logo" type="url" placeholder="https://... (upload to Cloudinary and paste URL)">
+          <div class="field-hint">Upload the partner's logo to cloudinary.com and paste the URL here</div>
+        </div>
+      </div>
+
       <div style="display:flex;gap:12px;align-items:center">
         <button class="btn-primary" onclick="submitEntrepreneur()" id="addBtn" style="flex:1;justify-content:center;padding:14px">
           ✓ Publish Loan Listing
@@ -565,6 +589,10 @@ function submitEntrepreneur() {
   var narrative = document.getElementById('add-narrative').value.trim();
   var photo = document.getElementById('add-photo').value.trim();
   var video = document.getElementById('add-video').value.trim();
+  var partnerName = document.getElementById('add-partner-name').value.trim();
+  var partnerDesc = document.getElementById('add-partner-description').value.trim();
+  var partnerLogo = document.getElementById('add-partner-logo').value.trim();
+  var partnerContact = document.getElementById('add-partner-contact').value.trim();
 
   if (!name || !initials || !location || !sector || !amount || !purpose || !narrative) {
     showToast('Please fill in all required fields.', 'error');
@@ -593,7 +621,11 @@ function submitEntrepreneur() {
       repayment_plan: repayment,
       narrative: narrative,
       profile_photo_url: photo || null,
-      video_url: video || null
+      video_url: video || null,
+      partner_name: partnerName || null,
+      partner_description: partnerDesc || null,
+      partner_logo_url: partnerLogo || null,
+      partner_contact: partnerContact || null
     })
   })
   .then(function(r) {
@@ -683,12 +715,12 @@ function updateCount(el, countId, max, unit) {
 }
 
 function clearAddForm() {
-  ['add-name','add-initials','add-location','add-amount','add-purpose','add-repayment','add-narrative','add-photo','add-video'].forEach(function(id) {
+  ['add-name','add-initials','add-location','add-amount','add-purpose','add-repayment','add-narrative','add-photo','add-video','add-partner-name','add-partner-description','add-partner-logo','add-partner-contact'].forEach(function(id) {
     document.getElementById(id).value = '';
   });
   document.getElementById('add-sector').value = '';
   document.getElementById('add-term').value = '6';
-  ['purposeCount','repayCount','narrativeCount'].forEach(function(id) {
+  ['purposeCount','repayCount','narrativeCount','partnerDescCount'].forEach(function(id) {
     document.getElementById(id).textContent = '0';
   });
 }
