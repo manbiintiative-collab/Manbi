@@ -126,10 +126,12 @@ nav{background:#fff!important;border-bottom:1px solid var(--ink12);min-height:62
 
 /* ── OPEN LOANS ── */
 .loans-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
-.loan-card{background:#fff;border:1px solid var(--ink12);border-radius:var(--radius);padding:18px;transition:transform .2s,border-color .2s;display:flex;flex-direction:column;gap:0}
+.loan-card{background:#fff;border:1px solid var(--ink12);border-radius:var(--radius);transition:transform .2s,border-color .2s;display:flex;flex-direction:column;gap:0;overflow:hidden}
 .loan-card:hover{transform:translateY(-3px);border-color:var(--t400)}
+.lcard-cover{width:100%;height:170px;object-fit:cover;display:block;background:var(--t50)}
+.lcard-cover-placeholder{width:100%;height:170px;background:var(--t50);display:flex;align-items:center;justify-content:center;font-size:40px}
+.lcard-body{padding:14px 16px 16px}
 .lcard-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.lcard-av{width:40px;height:40px;border-radius:50%;background:var(--t50);display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:14px;color:var(--t700);flex-shrink:0}
 .lcard-sector{display:inline-block;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.4px;background:var(--t50);color:var(--t700);padding:2px 8px;border-radius:50px;margin-bottom:3px}
 .lcard-name{font-size:14px;font-weight:500;color:var(--ink)}
 .lcard-loc{font-size:11px;color:var(--ink60)}
@@ -799,14 +801,17 @@ function renderLoans(loans) {
     grid.innerHTML = '<div class="empty-state"><div class="empty-icon">&#127807;</div><div class="empty-title">No loans found</div><div class="empty-sub">Try a different filter or check back soon.</div></div>';
     return;
   }
+  var SECTOR_EMOJI = {food:'🍲',fashion:'👗',farming:'🌾',tech:'💻',beauty:'💄',transport:'🚐',retail:'🛒',health:'💊',education:'📚'};
   var out = '';
   for (var i = 0; i < loans.length; i++) {
     var l = loans[i];
-    var avHtml = l.profile_photo_url
-      ? '<img src="' + l.profile_photo_url + '" alt="' + l.name + '" style="width:40px;height:40px;border-radius:50%;object-fit:cover">'
-      : l.av;
+    var coverHtml = l.profile_photo_url
+      ? '<img class="lcard-cover" src="' + l.profile_photo_url + '" alt="' + l.name + '" loading="lazy">'
+      : '<div class="lcard-cover-placeholder">' + (SECTOR_EMOJI[l.sector] || '🏪') + '</div>';
     out += '<div class="loan-card" onclick="openLoanDetail(\'' + l.id + '\')" style="cursor:pointer">';
-    out += '<div class="lcard-top"><div class="lcard-av">' + avHtml + '</div><div>';
+    out += coverHtml;
+    out += '<div class="lcard-body">';
+    out += '<div class="lcard-top"><div>';
     out += '<div class="lcard-sector">' + (SECTOR_LABELS[l.sector] || l.sector) + '</div>';
     out += '<div class="lcard-name">' + l.name + '</div>';
     out += '<div class="lcard-loc">' + l.loc + '</div>';
@@ -817,7 +822,7 @@ function renderLoans(loans) {
     out += '<div class="lcard-footer">';
     out += '<div class="lcard-amount">GHS ' + l.goal.toLocaleString() + '</div>';
     out += '<button class="lcard-btn" onclick="event.stopPropagation();openCheckout(\'' + l.id + '\')">Fund from GHS 10</button>';
-    out += '</div></div>';
+    out += '</div></div></div>';
   }
   grid.innerHTML = out;
 }
