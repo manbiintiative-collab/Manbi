@@ -262,8 +262,8 @@ nav{background:#fff!important;border-bottom:1px solid var(--ink12);min-height:62
 /* ── LOAN DETAIL MODAL ── */
 .loan-card{cursor:pointer}
 .ld-hero{display:flex;gap:14px;align-items:center;margin-bottom:20px}
-.ld-av{width:56px;height:56px;border-radius:50%;object-fit:cover;flex-shrink:0;background:var(--t50);display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:20px;color:var(--t700)}
-.ld-av img{width:56px;height:56px;border-radius:50%;object-fit:cover}
+.ld-cover{width:100%;height:240px;object-fit:cover;border-radius:16px;margin-bottom:18px;display:block}
+.ld-cover-placeholder{width:100%;height:240px;background:var(--t50);border-radius:16px;margin-bottom:18px;display:flex;align-items:center;justify-content:center;font-size:52px}
 .ld-name{font-family:var(--fd);font-size:19px;color:var(--ink);margin-bottom:2px}
 .ld-tags{display:flex;gap:6px;flex-wrap:wrap}
 .ld-tag{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.4px;background:var(--t50);color:var(--t700);padding:2px 9px;border-radius:50px}
@@ -483,14 +483,10 @@ nav{background:#fff!important;border-bottom:1px solid var(--ink12);min-height:62
   <div class="modal-sheet" style="max-width:520px">
     <div class="modal-handle"></div>
     <button class="m-close" onclick="closeModal('loanDetailModal')">✕</button>
-    <!-- Hero -->
-    <div class="ld-hero">
-      <div class="ld-av" id="ldAv"></div>
-      <div>
-        <div class="ld-name" id="ldName"></div>
-        <div class="ld-tags" id="ldTags"></div>
-      </div>
-    </div>
+    <!-- Cover photo -->
+    <div id="ldCoverWrap"></div>
+    <div class="ld-name" id="ldName"></div>
+    <div class="ld-tags" id="ldTags" style="margin-bottom:14px"></div>
     <!-- Progress bar -->
     <div class="ld-bar-wrap">
       <div class="ld-bar-row">
@@ -835,19 +831,18 @@ function openLoanDetail(id) {
   var l = OPEN_LOANS.find(function(x) { return String(x.id) === String(id); });
   if (!l) return;
 
-  // Avatar
-  var avEl = document.getElementById('ldAv');
-  if (l.profile_photo_url) {
-    avEl.innerHTML = '<img src="' + l.profile_photo_url + '" alt="' + l.name + '">';
-  } else {
-    avEl.textContent = l.av;
-  }
+  // Cover photo
+  var SECTOR_EMOJI = {food:'🍲',fashion:'👗',farming:'🌾',tech:'💻',beauty:'💄',transport:'🚐',retail:'🛒',health:'💊',education:'📚'};
+  var emoji = SECTOR_EMOJI[l.sector] || '🏪';
+  var coverWrap = document.getElementById('ldCoverWrap');
+  coverWrap.innerHTML = l.profile_photo_url
+    ? '<img class="ld-cover" src="' + l.profile_photo_url + '" alt="' + l.name + '">'
+    : '<div class="ld-cover-placeholder">' + emoji + '</div>';
 
   // Name & tags
   document.getElementById('ldName').textContent = l.name;
-  var SECTOR_EMOJI = {food:'🍲',fashion:'👗',farming:'🌾',tech:'💻',beauty:'💄',transport:'🚐',retail:'🛒',health:'💊',education:'📚'};
   document.getElementById('ldTags').innerHTML =
-    '<span class="ld-tag">' + (SECTOR_EMOJI[l.sector] || '🏪') + ' ' + (l.sector || 'Business') + '</span>' +
+    '<span class="ld-tag">' + emoji + ' ' + (l.sector || 'Business') + '</span>' +
     '<span class="ld-tag" style="background:#F5F0FF;color:#7C3AED">📍 ' + l.loc + '</span>';
 
   // Progress

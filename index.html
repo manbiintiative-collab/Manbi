@@ -224,6 +224,22 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:40px 8%;display
 .m-title{font-family:var(--fd);font-size:21px;color:var(--ink);margin-bottom:4px}
 .m-sub{font-size:13px;color:var(--ink60);margin-bottom:20px}
 .m-close{position:absolute;top:14px;right:14px;background:rgba(15,28,23,.07);border:none;border-radius:50%;width:30px;height:30px;font-size:16px;cursor:pointer;color:var(--ink);display:flex;align-items:center;justify-content:center}
+
+/* ── LOAN DETAIL MODAL (LANDING PAGE) ── */
+.ld-cover{width:100%;height:240px;object-fit:cover;border-radius:16px;margin-bottom:18px;display:block}
+.ld-cover-placeholder{width:100%;height:240px;background:var(--t50);border-radius:16px;margin-bottom:18px;display:flex;align-items:center;justify-content:center;font-size:52px}
+.ld-name2{font-family:'DM Serif Display',Georgia,serif;font-size:21px;color:var(--ink);margin-bottom:6px}
+.ld-tags2{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}
+.ld-tag2{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.4px;background:var(--t50);color:var(--t700);padding:3px 10px;border-radius:50px}
+.ld-sec-title2{font-size:11px;font-weight:600;color:var(--ink60);letter-spacing:.6px;text-transform:uppercase;margin-bottom:8px;margin-top:18px}
+.ld-text2{font-size:14px;color:var(--ink);line-height:1.65}
+.ld-bar-row2{display:flex;justify-content:space-between;font-size:12px;color:var(--ink60);margin-bottom:5px;margin-top:14px}
+.ld-bar2{height:6px;background:var(--ink12);border-radius:3px;overflow:hidden}
+.ld-bar-fill2{height:100%;background:var(--t400);border-radius:3px;transition:width .6s cubic-bezier(.22,.68,0,1.2)}
+.ld-partner2{display:flex;gap:12px;align-items:flex-start;background:#F8F9FF;border:1px solid #E8EAFF;border-radius:14px;padding:14px 15px;margin-top:18px}
+.ld-partner-logo2{width:40px;height:40px;border-radius:10px;object-fit:contain;background:#fff;border:1px solid var(--ink12);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px}
+.ld-partner-name2{font-size:14px;font-weight:600;color:#3730A3;margin-bottom:3px}
+.ld-partner-desc2{font-size:12px;color:var(--ink60);line-height:1.55}
 .f-input{width:100%;border:1.5px solid var(--ink12);border-radius:11px;padding:12px 14px;font-size:15px;color:var(--ink);outline:none;background:#fff;transition:border-color .2s;margin-bottom:14px;font-family:var(--fb)}
 .f-input:focus{border-color:var(--t500);box-shadow:0 0 0 3px rgba(26,144,112,.08)}
 .f-select{width:100%;border:1.5px solid var(--ink12);border-radius:11px;padding:12px 14px;font-size:15px;color:var(--ink);outline:none;background:#fff;-webkit-appearance:none;appearance:none;margin-bottom:14px;font-family:var(--fb)}
@@ -754,6 +770,36 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:40px 8%;display
 </div>
 </footer>
 
+<!-- ══ LOAN DETAIL MODAL ══ -->
+<div class="modal-overlay" id="loanDetailModal" onclick="if(event.target===this)closeModal('loanDetailModal')">
+  <div class="modal-sheet" style="max-width:520px">
+    <div class="modal-handle"></div>
+    <button class="m-close" onclick="closeModal('loanDetailModal')">✕</button>
+    <div id="ldCoverWrap"></div>
+    <div class="ld-name2" id="ld2Name"></div>
+    <div class="ld-tags2" id="ld2Tags"></div>
+    <div class="ld-bar-row2"><span id="ld2Raised"></span><span id="ld2Pct" style="color:var(--t500);font-weight:600"></span></div>
+    <div class="ld-bar2"><div class="ld-bar-fill2" id="ld2BarFill" style="width:0%"></div></div>
+    <div class="ld-sec-title2">💡 Use of funds</div>
+    <div class="ld-text2" id="ld2Purpose"></div>
+    <div id="ld2NarrativeWrap" style="display:none">
+      <div class="ld-sec-title2">📖 Story</div>
+      <div class="ld-text2" id="ld2Narrative"></div>
+    </div>
+    <div id="ld2PartnerWrap" style="display:none">
+      <div class="ld-sec-title2">🤝 Field partner</div>
+      <div class="ld-partner2">
+        <div class="ld-partner-logo2" id="ld2PartnerLogo"></div>
+        <div>
+          <div class="ld-partner-name2" id="ld2PartnerName"></div>
+          <div class="ld-partner-desc2" id="ld2PartnerDesc"></div>
+        </div>
+      </div>
+    </div>
+    <button class="m-confirm" style="margin-top:24px" onclick="window.location.href='/login'">Fund this loan →</button>
+  </div>
+</div>
+
 <!-- ══ ENTREPRENEUR INTEREST MODAL ══ -->
 <div class="modal-overlay" id="interestModal" onclick="if(event.target===this)closeModal('interestModal')">
   <div class="modal-sheet">
@@ -976,8 +1022,10 @@ function submitSupport(){
       .catch(function() {});
   }
 
+  var CURRENT_LOANS = [];
   function renderLoans(loans) {
     loadFeatured();
+    CURRENT_LOANS = loans;
     var gridLoans = loans.slice(0, 3);
     grid.innerHTML = '';
     if (gridLoans.length === 0) { empty.style.display = 'block'; return; }
@@ -989,6 +1037,8 @@ function submitSupport(){
       var emoji  = emojiMap[(loan.sector||'').toLowerCase()] || '🏪';
       var card = document.createElement('div');
       card.className = 'loan-card';
+      card.style.cursor = 'pointer';
+      card.onclick = function() { openLoanDetail(loan.id); };
       card.innerHTML =
         (loan.profile_photo_url
           ? '<img class="loan-avatar" src="' + loan.profile_photo_url + '" alt="' + loan.entrepreneur_name + '" loading="lazy">'
@@ -1009,8 +1059,8 @@ function submitSupport(){
             '<div class="loan-pct">' + pct + '% funded · ' + (loan.loan_term_months || 6) + '-month repayment</div>' +
           '</div>' +
           '<div class="loan-foot">' +
-            '<button class="btn-fund" onclick="window.location.href=\'/login\'">Fund this loan</button>' +
-            '<button class="btn-fund-ghost" onclick="window.location.href=\'/login\'">Learn more</button>' +
+            '<button class="btn-fund" onclick="event.stopPropagation();window.location.href=\'/login\'">Fund this loan</button>' +
+            '<button class="btn-fund-ghost" onclick="event.stopPropagation();openLoanDetail(\'' + loan.id + '\')">Learn more</button>' +
           '</div>' +
         '</div>';
       grid.appendChild(card);
@@ -1022,6 +1072,58 @@ function submitSupport(){
         setTimeout(function(){ b.style.width = w; }, 50);
       });
     }, 100);
+  }
+
+  function openLoanDetail(id) {
+    var l = CURRENT_LOANS.find(function(x) { return String(x.id) === String(id); });
+    if (!l) return;
+    var raised = parseFloat(l.amount_raised || l.funded_amount || 0);
+    var goal   = parseFloat(l.goal_amount || 1);
+    var pct    = Math.min(100, Math.round((raised / goal) * 100));
+    var emojiMap = {food:'🍲',fashion:'👗',farming:'🌾',tech:'💻',beauty:'💄',transport:'🚐',retail:'🛍',health:'💊'};
+    var emoji = emojiMap[(l.sector||'').toLowerCase()] || '🏪';
+
+    var coverWrap = document.getElementById('ldCoverWrap');
+    coverWrap.innerHTML = l.profile_photo_url
+      ? '<img class="ld-cover" src="' + l.profile_photo_url + '" alt="' + l.entrepreneur_name + '">'
+      : '<div class="ld-cover-placeholder">' + emoji + '</div>';
+
+    document.getElementById('ld2Name').textContent = l.entrepreneur_name;
+    document.getElementById('ld2Tags').innerHTML =
+      '<span class="ld-tag2">' + emoji + ' ' + (l.sector || 'Business') + '</span>' +
+      '<span class="ld-tag2" style="background:#F5F0FF;color:#7C3AED">📍 ' + (l.location || 'Ghana') + '</span>';
+
+    document.getElementById('ld2Raised').textContent = 'GHS ' + raised.toLocaleString() + ' raised of GHS ' + goal.toLocaleString();
+    document.getElementById('ld2Pct').textContent = pct + '% funded';
+    setTimeout(function() {
+      document.getElementById('ld2BarFill').style.width = pct + '%';
+    }, 80);
+
+    document.getElementById('ld2Purpose').textContent = l.purpose || l.narrative || '';
+
+    var narrativeWrap = document.getElementById('ld2NarrativeWrap');
+    if (l.narrative && l.narrative !== l.purpose) {
+      document.getElementById('ld2Narrative').textContent = l.narrative;
+      narrativeWrap.style.display = 'block';
+    } else {
+      narrativeWrap.style.display = 'none';
+    }
+
+    var partnerWrap = document.getElementById('ld2PartnerWrap');
+    if (l.partner_name) {
+      var logoEl = document.getElementById('ld2PartnerLogo');
+      logoEl.innerHTML = l.partner_logo_url
+        ? '<img src="' + l.partner_logo_url + '" alt="' + l.partner_name + '" style="width:100%;height:100%;object-fit:contain;border-radius:10px">'
+        : '🏦';
+      document.getElementById('ld2PartnerName').textContent = l.partner_name;
+      document.getElementById('ld2PartnerDesc').textContent = l.partner_description || '';
+      partnerWrap.style.display = 'block';
+    } else {
+      partnerWrap.style.display = 'none';
+    }
+
+    document.getElementById('loanDetailModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
   }
 
   var done = false;
