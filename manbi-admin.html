@@ -352,16 +352,6 @@ input,select,textarea{font-family:var(--fb)}
         </div>
       </div>
 
-      <div style="background:#FFF8E7;border:1px solid #F5C842;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:4px;">
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;flex:1">
-          <input type="checkbox" id="add-featured" style="width:18px;height:18px;accent-color:var(--t500);cursor:pointer;">
-          <div>
-            <div style="font-size:14px;font-weight:600;color:#7A5500;">⭐ Feature as Top Story</div>
-            <div style="font-size:12px;color:rgba(122,85,0,.7);margin-top:2px;">This entrepreneur's video will appear in the Top Story section on the landing page. Only one can be featured at a time — selecting this will unfeature the current one.</div>
-          </div>
-        </label>
-      </div>
-
       <div style="display:flex;gap:12px;align-items:center">
         <button class="btn-primary" onclick="submitEntrepreneur()" id="addBtn" style="flex:1;justify-content:center;padding:14px">
           ✓ Publish Loan Listing
@@ -539,7 +529,7 @@ function loadApplications() {
 
 // ── LOAD LOANS ──
 function loadLoans() {
-  fetch(API + '/loans')
+  fetch(API + '/admin/loans', { headers: authHeaders() })
   .then(function(r) { return r.json(); })
   .then(function(data) {
     var loans = data.loans || data;
@@ -549,7 +539,8 @@ function loadLoans() {
     }
     var rows = loans.map(function(l) {
       var pct = l.pct_funded || 0;
-      return '<tr>' +
+      var rowStyle = l.status === 'funded' ? ' style="background:#FFFBEA"' : '';
+      return '<tr' + rowStyle + '>' +
         '<td><strong>' + l.entrepreneur_name + '</strong><br><span style="font-size:12px;color:var(--ink60)">' + l.location + '</span></td>' +
         '<td><span class="status-pill sp-' + l.sector + '" style="background:var(--t50);color:var(--t700)">' + l.sector + '</span></td>' +
         '<td>GHS ' + parseFloat(l.goal_amount).toLocaleString() + '</td>' +
@@ -603,7 +594,6 @@ function submitEntrepreneur() {
   var partnerDesc = document.getElementById('add-partner-description').value.trim();
   var partnerLogo = document.getElementById('add-partner-logo').value.trim();
   var partnerContact = document.getElementById('add-partner-contact').value.trim();
-  var featured = document.getElementById('add-featured').checked;
 
   if (!name || !initials || !location || !sector || !amount || !purpose || !narrative) {
     showToast('Please fill in all required fields.', 'error');
@@ -636,8 +626,7 @@ function submitEntrepreneur() {
       partner_name: partnerName || null,
       partner_description: partnerDesc || null,
       partner_logo_url: partnerLogo || null,
-      partner_contact: partnerContact || null,
-      featured: featured
+      partner_contact: partnerContact || null
     })
   })
   .then(function(r) {
@@ -730,7 +719,6 @@ function clearAddForm() {
   ['add-name','add-initials','add-location','add-amount','add-purpose','add-repayment','add-narrative','add-photo','add-video','add-partner-name','add-partner-description','add-partner-logo','add-partner-contact'].forEach(function(id) {
     document.getElementById(id).value = '';
   });
-  document.getElementById('add-featured').checked = false;
   document.getElementById('add-sector').value = '';
   document.getElementById('add-term').value = '6';
   ['purposeCount','repayCount','narrativeCount','partnerDescCount'].forEach(function(id) {
