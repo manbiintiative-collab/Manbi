@@ -964,24 +964,32 @@ function submitSupport(){
     }
   }
 
-  // Fetch featured loan first, fall back to first active loan
-  function loadFeatured(allLoans) {
+  function loadFeatured() {
     fetch(API + '/admin/featured')
       .then(function(r) { return r.json(); })
       .then(function(featured) {
         if (featured && featured.entrepreneur_name) {
           populateFeatured(featured);
-        } else if (allLoans && allLoans.length > 0) {
-          populateFeatured(allLoans[0]);
+        } else {
+          showFeaturedPlaceholder();
         }
       })
       .catch(function() {
-        if (allLoans && allLoans.length > 0) populateFeatured(allLoans[0]);
+        showFeaturedPlaceholder();
       });
   }
 
+  function showFeaturedPlaceholder() {
+    var nameEl = document.getElementById('featuredName');
+    var locEl  = document.getElementById('featuredLoc');
+    var purpEl = document.getElementById('featuredPurpose');
+    if (nameEl) nameEl.textContent = 'A new story is coming soon';
+    if (locEl)  locEl.textContent  = '';
+    if (purpEl) purpEl.textContent = "We're preparing our next featured entrepreneur. Check back shortly, or browse all active loans below.";
+  }
+
   function renderLoans(loans) {
-    loadFeatured(loans);
+    loadFeatured();
     var gridLoans = loans.slice(0, 3);
     grid.innerHTML = '';
     if (gridLoans.length === 0) { empty.style.display = 'block'; return; }
