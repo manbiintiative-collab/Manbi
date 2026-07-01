@@ -303,6 +303,21 @@ input,select,textarea{font-family:var(--fb)}
           <textarea class="f-ta" id="add-repayment" placeholder="e.g. Expected monthly revenue of GHS 4,200 after loan deployment. Will repay GHS 420/month over 6 months via MTN MoMo." oninput="updateCount(this,'repayCount',300)"></textarea>
           <div class="char-count"><span id="repayCount">0</span>/300</div>
         </div>
+        <div class="form-field">
+          <div class="f-label">Repayment Track <span class="required">*</span></div>
+          <div style="display:flex;gap:12px;margin-top:4px">
+            <label style="flex:1;border:1.5px solid var(--ink12);border-radius:12px;padding:14px;cursor:pointer;transition:border-color .2s" id="track-standard-label">
+              <input type="radio" name="repayment_track" value="standard" id="track-standard" checked style="margin-right:8px;accent-color:var(--t500)">
+              <strong style="font-size:13px">📅 Standard Monthly</strong>
+              <div style="font-size:12px;color:var(--ink60);margin-top:4px;margin-left:20px">Equal monthly installments. For market traders, shopkeepers, artisans.</div>
+            </label>
+            <label style="flex:1;border:1.5px solid var(--ink12);border-radius:12px;padding:14px;cursor:pointer;transition:border-color .2s" id="track-agricultural-label">
+              <input type="radio" name="repayment_track" value="agricultural" id="track-agricultural" style="margin-right:8px;accent-color:var(--t500)">
+              <strong style="font-size:13px">🌾 Agricultural Seasonal</strong>
+              <div style="font-size:12px;color:var(--ink60);margin-top:4px;margin-left:20px">Grace period during cultivation. Repayments at harvest. For farmers.</div>
+            </label>
+          </div>
+        </div>
       </div>
 
       <div class="form-card">
@@ -372,6 +387,20 @@ input,select,textarea{font-family:var(--fb)}
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- ── DISBURSEMENT MODAL ── -->
+<div class="modal-overlay" id="disbursementModal" onclick="if(event.target===this)closeModal('disbursementModal')">
+  <div class="modal" style="max-width:420px">
+    <button class="m-close" onclick="closeModal('disbursementModal')">✕</button>
+    <div style="font-family:var(--fd);font-size:20px;color:var(--ink);margin-bottom:8px">Confirm Disbursement</div>
+    <p style="font-size:13px;color:var(--ink60);line-height:1.6;margin-bottom:20px">This will mark the loan as disbursed and automatically generate the repayment schedule for the lenders' dashboards.</p>
+    <div style="margin-bottom:16px">
+      <div class="f-label">Disbursement Date</div>
+      <input type="date" id="disbursedAt" class="f-inp">
+    </div>
+    <button class="btn-primary" id="disburseBtn" style="width:100%;justify-content:center;padding:13px">Confirm Disbursement</button>
   </div>
 </div>
 
@@ -573,8 +602,35 @@ function loadLoans() {
 
 // ── LOAD LENDERS ──
 function loadLenders() {
-  // Use the stats endpoint for now — full lender list needs admin endpoint
-  document.getElementById('lendersContent').innerHTML = '<div class="empty"><div class="empty-icon">👥</div><div class="empty-title">Lender management coming soon</div><p>See total lender count in the Overview tab for now.</p></div>';
+  document.getElementById('lendersContent').innerHTML = '<div class="loading"><div class="spinner"></div>Loading...</div>';
+  fetch(API + '/admin/lenders', { headers: authHeaders() })
+  .then(function(r) { return r.json(); })
+  .then(function(lenders) {
+    if (!Array.isArray(lenders) || lenders.length === 0) {
+      document.getElementById('lendersContent').innerHTML = '<div class="empty"><div class="empty-icon">👥</div><div class="empty-title">No lenders yet</div><p>Lenders will appear here once they register on Manbi.</p></div>';
+      return;
+    }
+    var rows = lenders.map(function(l) {
+      var name = (l.fname || '') + ' ' + (l.lname || '');
+      var avatar = l.profile_photo_url
+        ? '<img src="' + l.profile_photo_url + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:8px">'
+        : '<span style="display:inline-flex;width:32px;height:32px;border-radius:50%;background:var(--t50);color:var(--t700);align-items:center;justify-content:center;font-size:12px;font-weight:600;vertical-align:middle;margin-right:8px">' + (l.fname||'?')[0].toUpperCase() + '</span>';
+      var joined = new Date(l.created_at).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'});
+      return '<tr>' +
+        '<td>' + avatar + '<strong>' + name.trim() + '</strong><br><span style="font-size:11px;color:var(--ink60);margin-left:40px">' + (l.email||'') + '</span></td>' +
+        '<td>' + (l.momo_number || '—') + '<br><span style="font-size:11px;color:var(--ink60)">' + (l.momo_network || '') + '</span></td>' +
+        '<td style="font-weight:600;color:var(--t700)">GHS ' + parseFloat(l.vault_balance||0).toLocaleString() + '</td>' +
+        '<td>' + parseInt(l.loans_funded||0) + ' loans<br><span style="font-size:11px;color:var(--ink60)">GHS ' + parseFloat(l.total_funded||0).toLocaleString() + ' total</span></td>' +
+        '<td><span class="status-pill" style="background:var(--t50);color:var(--t700)">' + (l.level||'Seed Sower') + '</span></td>' +
+        '<td style="font-size:12px;color:var(--ink60)">' + joined + '</td>' +
+      '</tr>';
+    }).join('');
+    document.getElementById('lendersContent').innerHTML =
+      '<table class="data-table"><thead><tr><th>Lender</th><th>MoMo</th><th>Vault Balance</th><th>Activity</th><th>Level</th><th>Joined</th></tr></thead><tbody>' + rows + '</tbody></table>';
+  })
+  .catch(function() {
+    document.getElementById('lendersContent').innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-title">Could not load lenders.</div></div>';
+  });
 }
 
 // ── ADD ENTREPRENEUR ──
@@ -594,6 +650,8 @@ function submitEntrepreneur() {
   var partnerDesc = document.getElementById('add-partner-description').value.trim();
   var partnerLogo = document.getElementById('add-partner-logo').value.trim();
   var partnerContact = document.getElementById('add-partner-contact').value.trim();
+  var featured = document.getElementById('add-featured').checked;
+  var repaymentTrack = document.querySelector('input[name="repayment_track"]:checked').value;
 
   if (!name || !initials || !location || !sector || !amount || !purpose || !narrative) {
     showToast('Please fill in all required fields.', 'error');
@@ -626,7 +684,9 @@ function submitEntrepreneur() {
       partner_name: partnerName || null,
       partner_description: partnerDesc || null,
       partner_logo_url: partnerLogo || null,
-      partner_contact: partnerContact || null
+      partner_contact: partnerContact || null,
+      featured: featured,
+      repayment_track: repaymentTrack || 'standard'
     })
   })
   .then(function(r) {
@@ -652,6 +712,10 @@ function submitEntrepreneur() {
 // ── UPDATE LOAN STATUS ──
 function updateLoanStatus(id, status) {
   if (!status) return;
+  if (status === 'disbursed') {
+    openDisbursementModal(id);
+    return;
+  }
   fetch(API + '/admin/loans/' + id, {
     method: 'PATCH',
     headers: Object.assign({'Content-Type': 'application/json'}, authHeaders()),
@@ -664,6 +728,39 @@ function updateLoanStatus(id, status) {
     loadLoans();
   })
   .catch(function() { showToast('Update failed.', 'error'); });
+}
+
+function openDisbursementModal(loanId) {
+  document.getElementById('disburseBtn').onclick = function() { confirmDisbursement(loanId); };
+  document.getElementById('disbursedAt').value = new Date().toISOString().split('T')[0];
+  document.getElementById('disbursementModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function confirmDisbursement(loanId) {
+  var disbursedAt = document.getElementById('disbursedAt').value;
+  var btn = document.getElementById('disburseBtn');
+  btn.textContent = 'Processing...';
+  btn.disabled = true;
+  fetch(API + '/admin/loans/' + loanId + '/repayment-schedule', {
+    method: 'POST',
+    headers: Object.assign({'Content-Type': 'application/json'}, authHeaders()),
+    body: JSON.stringify({ disbursed_at: disbursedAt })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    btn.textContent = 'Confirm Disbursement';
+    btn.disabled = false;
+    if (data.error) { showToast(data.error, 'error'); return; }
+    closeModal('disbursementModal');
+    showToast('✅ Loan marked as disbursed. Repayment schedule generated.', 'success');
+    loadLoans();
+  })
+  .catch(function() {
+    btn.textContent = 'Confirm Disbursement';
+    btn.disabled = false;
+    showToast('Failed to process disbursement.', 'error');
+  });
 }
 
 // ── APPROVE MODAL ──
@@ -721,6 +818,8 @@ function clearAddForm() {
   });
   document.getElementById('add-sector').value = '';
   document.getElementById('add-term').value = '6';
+  document.getElementById('add-featured').checked = false;
+  document.getElementById('track-standard').checked = true;
   ['purposeCount','repayCount','narrativeCount','partnerDescCount'].forEach(function(id) {
     document.getElementById(id).textContent = '0';
   });
