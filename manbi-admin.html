@@ -390,6 +390,18 @@ input,select,textarea{font-family:var(--fb)}
   </div>
 </div>
 
+<!-- ── REPAYMENT SCHEDULE MODAL ── -->
+<div class="modal-overlay" id="repaymentModal" onclick="if(event.target===this)closeModal('repaymentModal')">
+  <div class="modal" style="max-width:560px">
+    <button class="m-close" onclick="closeModal('repaymentModal')">✕</button>
+    <div style="font-family:var(--fd);font-size:20px;color:var(--ink);margin-bottom:4px" id="repayModalTitle">Repayment Schedule</div>
+    <div style="font-size:13px;color:var(--ink60);margin-bottom:20px" id="repayModalSub"></div>
+    <div id="repaymentScheduleContent">
+      <div class="loading"><div class="spinner"></div>Loading...</div>
+    </div>
+  </div>
+</div>
+
 <!-- ── DISBURSEMENT MODAL ── -->
 <div class="modal-overlay" id="disbursementModal" onclick="if(event.target===this)closeModal('disbursementModal')">
   <div class="modal" style="max-width:420px">
@@ -569,8 +581,11 @@ function loadLoans() {
     var rows = loans.map(function(l) {
       var pct = l.pct_funded || 0;
       var rowStyle = l.status === 'funded' ? ' style="background:#FFFBEA"' : '';
+      var scheduleBtn = (l.status === 'disbursed' || l.status === 'repaid')
+        ? '<button class="btn-sm btn-outline" onclick="openRepaymentSchedule(' + l.id + ',\'' + l.entrepreneur_name + '\')" style="margin-top:6px;font-size:11px">📅 Repayments</button>'
+        : '';
       return '<tr' + rowStyle + '>' +
-        '<td><strong>' + l.entrepreneur_name + '</strong><br><span style="font-size:12px;color:var(--ink60)">' + l.location + '</span></td>' +
+        '<td><strong>' + l.entrepreneur_name + '</strong><br><span style="font-size:12px;color:var(--ink60)">' + l.location + '</span>' + (scheduleBtn ? '<br>' + scheduleBtn : '') + '</td>' +
         '<td><span class="status-pill sp-' + l.sector + '" style="background:var(--t50);color:var(--t700)">' + l.sector + '</span></td>' +
         '<td>GHS ' + parseFloat(l.goal_amount).toLocaleString() + '</td>' +
         '<td>' +
@@ -730,7 +745,78 @@ function updateLoanStatus(id, status) {
   .catch(function() { showToast('Update failed.', 'error'); });
 }
 
-function openDisbursementModal(loanId) {
+function openRepaymentSchedule(loanId, name) {
+  document.getElementById('repayModalTitle').textContent = name + ' — Repayment Schedule';
+  document.getElementById('repayModalSub').textContent = 'Mark each installment as paid when the entrepreneur\'s repayment is received.';
+  document.getElementById('repaymentScheduleContent').innerHTML = '<div class="loading"><div class="spinner"></div>Loading...</div>';
+  document.getElementById('repaymentModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  fetch(API + '/admin/loans/' + loanId + '/repayments', { headers: authHeaders() })
+  .then(function(r) { return r.json(); })
+  .then(function(schedule) {
+    if (!schedule.length) {
+      document.getElementById('repaymentScheduleContent').innerHTML = '<div class="empty"><div class="empty-icon">📅</div><div class="empty-title">No schedule found.</div></div>';
+      return;
+    }
+    var paid = schedule.filter(function(s) { return s.status === 'paid'; }).length;
+    var total = schedule.length;
+    var pct = Math.round((paid / total) * 100);
+    var html = '<div style="margin-bottom:16px">' +
+      '<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink60);margin-bottom:6px">' +
+        '<span>' + paid + ' of ' + total + ' installments paid</span>' +
+        '<span style="color:var(--t500);font-weight:600">' + pct + '%</span>' +
+      '</div>' +
+      '<div style="height:6px;background:var(--ink12);border-radius:3px;overflow:hidden">' +
+        '<div style="height:100%;width:' + pct + '%;background:var(--t400);border-radius:3px;transition:width .4s"></div>' +
+      '</div>' +
+    '</div>';
+
+    html += '<div style="display:flex;flex-direction:column;gap:10px">';
+    schedule.forEach(function(s) {
+      var isPaid = s.status === 'paid';
+      var isGrace = parseFloat(s.amount) === 0;
+      var dueDate = new Date(s.due_date).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'});
+      var paidDate = s.paid_at ? new Date(s.paid_at).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}) : null;
+      html += '<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;border:1px solid ' + (isPaid ? '#D1FAE5' : 'var(--ink12)') + ';background:' + (isPaid ? '#F0FDF4' : isGrace ? '#F8F9FF' : '#fff') + '">' +
+        '<div style="width:32px;height:32px;border-radius:50%;background:' + (isPaid ? 'var(--t400)' : isGrace ? '#E8EAFF' : 'var(--ink12)') + ';display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">' +
+          (isPaid ? '✓' : isGrace ? '⏸' : s.installment_number) +
+        '</div>' +
+        '<div style="flex:1">' +
+          '<div style="font-size:13px;font-weight:600;color:var(--ink)">Month ' + s.installment_number + (isGrace ? ' <span style="font-size:11px;font-weight:400;color:#4F46E5">(Grace period)</span>' : '') + '</div>' +
+          '<div style="font-size:12px;color:var(--ink60)">Due: ' + dueDate + (paidDate ? ' · Paid: ' + paidDate : '') + '</div>' +
+        '</div>' +
+        '<div style="text-align:right">' +
+          '<div style="font-size:14px;font-weight:600;color:' + (isPaid ? 'var(--t700)' : 'var(--ink)') + '">GHS ' + parseFloat(s.amount).toLocaleString() + '</div>' +
+          (!isPaid && !isGrace
+            ? '<button onclick="markRepaymentPaid(' + s.id + ',' + loanId + ',\'' + name + '\')" style="margin-top:4px;font-size:11px;padding:3px 10px;border:1px solid var(--t400);border-radius:20px;background:#fff;color:var(--t700);cursor:pointer;font-weight:500">Mark paid</button>'
+            : '<div style="font-size:11px;color:' + (isPaid ? 'var(--t600)' : 'var(--ink60)') + ';margin-top:2px">' + (isPaid ? '✓ Paid' : '—') + '</div>') +
+        '</div>' +
+      '</div>';
+    });
+    html += '</div>';
+    document.getElementById('repaymentScheduleContent').innerHTML = html;
+  })
+  .catch(function() {
+    document.getElementById('repaymentScheduleContent').innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-title">Could not load schedule.</div></div>';
+  });
+}
+
+function markRepaymentPaid(repaymentId, loanId, name) {
+  if (!confirm('Mark this installment as paid? This will credit all contributing lenders\' vaults proportionally.')) return;
+  fetch(API + '/admin/repayments/' + repaymentId + '/paid', {
+    method: 'PATCH',
+    headers: authHeaders()
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.error) { showToast(data.error, 'error'); return; }
+    showToast('✅ Installment marked as paid. Lender vaults credited.', 'success');
+    openRepaymentSchedule(loanId, name);
+    loadLoans();
+  })
+  .catch(function() { showToast('Failed to mark as paid.', 'error'); });
+}
   document.getElementById('disburseBtn').onclick = function() { confirmDisbursement(loanId); };
   document.getElementById('disbursedAt').value = new Date().toISOString().split('T')[0];
   document.getElementById('disbursementModal').classList.add('open');
