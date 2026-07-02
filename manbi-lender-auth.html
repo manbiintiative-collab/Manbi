@@ -327,7 +327,7 @@ button{cursor:pointer;font-family:var(--fb)}
       </div>
 
       <div style="text-align:right;margin:-8px 0 16px">
-        <a href="#" style="font-size:13px;color:#1A9070;font-weight:500">Forgot password?</a>
+        <a href="#" onclick="showForgotPassword()" style="font-size:13px;color:#1A9070;font-weight:500">Forgot password?</a>
       </div>
 
       <button class="submit-btn" onclick="submitLogin()">Sign in to Manbi →</button>
@@ -783,6 +783,87 @@ function acceptTermsAndClose() {
     check.textContent = '✓';
   }
   closeTermsModal();
+}
+</script>
+
+<!-- ══ FORGOT PASSWORD MODAL ══ -->
+<div id="forgotModal" onclick="if(event.target===this)closeForgotPassword()" style="display:none;position:fixed;inset:0;background:rgba(15,28,23,.5);z-index:9999;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:20px;max-width:420px;width:100%;padding:32px 28px;box-shadow:0 24px 60px rgba(15,28,23,.2)">
+    <button onclick="closeForgotPassword()" style="position:absolute;top:14px;right:14px;background:rgba(15,28,23,.07);border:none;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;color:#0F1C17">✕</button>
+
+    <!-- Request view -->
+    <div id="forgotRequest">
+      <div style="font-family:'DM Serif Display',Georgia,serif;font-size:22px;color:#0F1C17;margin-bottom:8px">Forgot your password?</div>
+      <p style="font-size:14px;color:rgba(15,28,23,.6);line-height:1.6;margin-bottom:24px">Enter the email address linked to your Manbi account and we'll send you a reset link.</p>
+      <div style="margin-bottom:16px">
+        <div style="font-size:11px;font-weight:600;color:#6B7280;letter-spacing:.5px;text-transform:uppercase;margin-bottom:7px">Email address</div>
+        <input id="forgotEmail" type="email" placeholder="kofi@example.com" style="width:100%;padding:12px 14px;border:1.5px solid rgba(15,28,23,.15);border-radius:12px;font-size:15px;outline:none;box-sizing:border-box" onkeydown="if(event.key==='Enter')submitForgotPassword()">
+      </div>
+      <div id="forgotErr" style="display:none;background:#FEF2F2;color:#C0392B;font-size:13px;padding:10px 14px;border-radius:10px;margin-bottom:14px"></div>
+      <button onclick="submitForgotPassword()" id="forgotBtn" style="width:100%;padding:14px;background:#1A9070;color:#fff;border:none;border-radius:50px;font-size:15px;font-weight:500;cursor:pointer">Send reset link →</button>
+    </div>
+
+    <!-- Success view -->
+    <div id="forgotSuccess" style="display:none;text-align:center">
+      <div style="font-size:48px;margin-bottom:16px">📬</div>
+      <div style="font-family:'DM Serif Display',Georgia,serif;font-size:22px;color:#0F1C17;margin-bottom:8px">Check your inbox</div>
+      <p style="font-size:14px;color:rgba(15,28,23,.6);line-height:1.6;margin-bottom:24px">If an account exists with that email, a reset link has been sent. It expires in 1 hour.</p>
+      <button onclick="closeForgotPassword()" style="width:100%;padding:14px;background:#1A9070;color:#fff;border:none;border-radius:50px;font-size:15px;font-weight:500;cursor:pointer">Back to login</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var API = 'https://manbi-backend.onrender.com/api';
+
+function showForgotPassword() {
+  document.getElementById('forgotRequest').style.display = 'block';
+  document.getElementById('forgotSuccess').style.display = 'none';
+  document.getElementById('forgotEmail').value = '';
+  document.getElementById('forgotErr').style.display = 'none';
+  document.getElementById('forgotModal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  setTimeout(function() { document.getElementById('forgotEmail').focus(); }, 100);
+}
+function closeForgotPassword() {
+  document.getElementById('forgotModal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+function submitForgotPassword() {
+  var email = document.getElementById('forgotEmail').value.trim();
+  var errEl = document.getElementById('forgotErr');
+  var btn = document.getElementById('forgotBtn');
+  if (!email) {
+    errEl.textContent = 'Please enter your email address.';
+    errEl.style.display = 'block';
+    return;
+  }
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+  errEl.style.display = 'none';
+  fetch(API + '/auth/forgot-password', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ email: email })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    btn.textContent = 'Send reset link →';
+    btn.disabled = false;
+    if (data.error) {
+      errEl.textContent = data.error;
+      errEl.style.display = 'block';
+      return;
+    }
+    document.getElementById('forgotRequest').style.display = 'none';
+    document.getElementById('forgotSuccess').style.display = 'block';
+  })
+  .catch(function() {
+    btn.textContent = 'Send reset link →';
+    btn.disabled = false;
+    errEl.textContent = 'Something went wrong. Please try again.';
+    errEl.style.display = 'block';
+  });
 }
 </script>
 
