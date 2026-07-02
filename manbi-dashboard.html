@@ -355,13 +355,6 @@ nav{background:#fff!important;border-bottom:1px solid var(--ink12);min-height:62
       <div class="vc-label">Vault Balance</div>
       <div class="vc-amount" id="vaultAmount">GHS —</div>
       <div class="vc-sub" id="vaultSub"> </div>
-      <div class="vc-bar-track">
-        <div class="vc-bar-fill" id="vaultBar" style="width:86%"></div>
-      </div>
-      <div class="vc-bar-label">
-        <span>GHS 0</span>
-        <span id="vaultBarLabel">86% to GHS 50</span>
-      </div>
       <div class="vc-actions">
         <button class="vc-btn-primary" onclick="openTopup()">+ Top up via MoMo</button>
         <button class="vc-btn-ghost" onclick="openWithdraw()">Withdraw</button>
@@ -372,21 +365,12 @@ nav{background:#fff!important;border-bottom:1px solid var(--ink12);min-height:62
     <div class="loans-card">
       <div class="lc-header">
         <div class="lc-title">Active Loans</div>
-        <span style="font-size:11px;color:var(--ink60)">GHS 320 in the field</span>
+        <span style="font-size:11px;color:var(--ink60)" id="inFieldAmount"></span>
       </div>
-      <div class="lc-num" id="activeLoansNum">2</div>
+      <div class="lc-num" id="activeLoansNum">—</div>
       <div class="lc-sub">loans currently being funded</div>
-      <div class="lc-mini-list">
-        <div class="lc-mini-item">
-          <div class="lc-mini-av">KM</div>
-          <div class="lc-mini-name">Kwame Mensah</div>
-          <div class="lc-mini-status s-active">Active</div>
-        </div>
-        <div class="lc-mini-item">
-          <div class="lc-mini-av">AM</div>
-          <div class="lc-mini-name">Auntie Martha</div>
-          <div class="lc-mini-status s-repaid" style="cursor:pointer" onclick="openRepayModal()">Repaid ›</div>
-        </div>
+      <div class="lc-mini-list" id="myLoansMiniList">
+        <div style="font-size:13px;color:var(--ink60);text-align:center;padding:12px 0">Loading...</div>
       </div>
     </div>
 
@@ -448,10 +432,10 @@ nav{background:#fff!important;border-bottom:1px solid var(--ink12);min-height:62
     <!-- OPEN LOANS TAB -->
     <div class="tab-panel active" id="panel-open">
 
-      <!-- Repayment nudge -->
-      <div class="repay-nudge">
+      <!-- Repayment nudge — shown dynamically when a real repaid loan exists -->
+      <div class="repay-nudge" id="repayNudge" style="display:none">
         <div class="rn-icon">💛</div>
-        <div class="rn-text"><strong>Auntie Martha repaid your loan!</strong> GHS 50 is back in your vault. What would you like to do with it?</div>
+        <div class="rn-text" id="repayNudgeText"></div>
         <button class="rn-btn" onclick="openRepayModal()">Choose →</button>
       </div>
 
@@ -723,8 +707,8 @@ function loadDashboard(token) {
   .then(function(r){ return r.json(); })
   .then(function(stats) {
     if (stats.vault_balance !== undefined) {
-      document.getElementById('vaultAmount').textContent = 'GHS ' + parseFloat(stats.vault_balance).toFixed(2);
-      document.getElementById('activeLoansNum').textContent = stats.active_loans || 0;
+      var balance = parseFloat(stats.vault_balance || 0);
+      document.getElementById('vaultAmount').textContent = 'GHS ' + balance.toFixed(2);
     }
   }).catch(function(){});
 
@@ -761,11 +745,54 @@ function loadDashboard(token) {
   })
   .catch(function(){ renderLoans(OPEN_LOANS); });
 
-  // Load my funded loans
+  // Load lender's funded loans — used for stats, mini list, nudge AND My Loans tab
   fetch(API + '/loans/my/funded', {headers: {'Authorization': 'Bearer ' + token}})
   .then(function(r){ return r.json(); })
   .then(function(loans) {
-    if (Array.isArray(loans) && loans.length > 0) {
+    if (!Array.isArray(loans)) loans = [];
+
+    // Stats
+    var activeCount = loans.filter(function(l) { return l.status === 'active' || l.status === 'disbursed'; }).length;
+    var totalInField = loans.reduce(function(sum, l) {
+      return sum + (l.status === 'active' || l.status === 'disbursed' ? parseFloat(l.my_contribution || 0) : 0);
+    }, 0);
+    document.getElementById('activeLoansNum').textContent = activeCount;
+    if (totalInField > 0) {
+      document.getElementById('inFieldAmount').textContent = 'GHS ' + totalInField.toLocaleString() + ' in the field';
+    }
+
+    // Mini list
+    var miniHtml = '';
+    if (loans.length === 0) {
+      miniHtml = '<div style="font-size:13px;color:var(--ink60);text-align:center;padding:12px 0">No loans yet — browse and fund below!</div>';
+    } else {
+      loans.slice(0, 5).forEach(function(l) {
+        var initials = (l.entrepreneur_name || '??').substring(0,2).toUpperCase();
+        var statusClass = l.status === 'repaid' ? 's-repaid' : l.status === 'disbursed' ? 's-disbursed' : 's-active';
+        var statusLabel = l.status === 'repaid' ? 'Repaid' : l.status === 'disbursed' ? 'Disbursed' : 'Active';
+        var avHtml = l.profile_photo_url
+          ? '<img src="' + l.profile_photo_url + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover">'
+          : initials;
+        miniHtml += '<div class="lc-mini-item">' +
+          '<div class="lc-mini-av">' + avHtml + '</div>' +
+          '<div class="lc-mini-name">' + (l.entrepreneur_name || '') + '</div>' +
+          '<div class="lc-mini-status ' + statusClass + '">' + statusLabel + '</div>' +
+          '</div>';
+      });
+    }
+    document.getElementById('myLoansMiniList').innerHTML = miniHtml;
+
+    // Repayment nudge
+    var repaidLoan = loans.find(function(l) { return l.status === 'repaid'; });
+    if (repaidLoan) {
+      var nudgeEl = document.getElementById('repayNudge');
+      var nudgeText = document.getElementById('repayNudgeText');
+      nudgeText.innerHTML = '<strong>' + repaidLoan.entrepreneur_name + ' repaid your loan!</strong> GHS ' + parseFloat(repaidLoan.my_contribution || 0).toFixed(2) + ' is back in your vault. What would you like to do with it?';
+      nudgeEl.style.display = 'flex';
+    }
+
+    // My Loans tab
+    if (loans.length > 0) {
       MY_LOANS = loans.map(function(l) {
         var raised = parseFloat(l.amount_raised || l.raised || 0);
         var goal   = parseFloat(l.goal_amount || 1);
@@ -774,15 +801,19 @@ function loadDashboard(token) {
           name:        l.entrepreneur_name || '',
           loc:         (l.location || '') + ' · ' + (l.sector || ''),
           contributed: parseFloat(l.my_contribution || l.amount || 0),
-          status:      l.loan_status === 'repaid' ? 'repaid' : 'active',
+          status:      l.status === 'repaid' ? 'repaid' : 'active',
           repayPct:    Math.min(100, Math.round((raised / goal) * 100)),
-          color:       '#2AB08A'
+          color:       '#2AB08A',
+          profile_photo_url: l.profile_photo_url || null
         };
       });
     }
     renderMyLoans();
   })
-  .catch(function(){ renderMyLoans(); });
+  .catch(function(){
+    document.getElementById('myLoansMiniList').innerHTML = '<div style="font-size:13px;color:var(--ink60);text-align:center;padding:12px 0">Could not load loans.</div>';
+    renderMyLoans();
+  });
 }
 
 // ── TABS ──
