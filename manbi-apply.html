@@ -144,6 +144,12 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 5%;h
         <textarea class="f-textarea" id="appPurpose" name="purpose" placeholder="e.g. To buy fertilizer and seeds before the rainy season starts..."></textarea>
       </div>
 
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:18px;cursor:pointer" onclick="toggleEntrepreneurTerms()">
+        <div id="entrepreneurTermsCheck" style="width:18px;height:18px;border-radius:5px;border:1.5px solid rgba(15,28,23,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;transition:all .2s;background:#fff">
+        </div>
+        <div style="font-size:13px;color:rgba(15,28,23,.65);line-height:1.5">I have read and agree to Manbi's <a href="#" onclick="event.stopPropagation();openEntrepreneurTerms()" style="color:#1A9070;font-weight:500">Entrepreneur Terms & Conditions</a>. I understand this is an interest-free loan with repayment obligations.</div>
+      </div>
+
       <button type="submit" class="submit-btn">Submit my interest →</button>
       <p class="submit-note">A Manbi agent will call you within 48 hours 📞</p>
     </form>
@@ -189,6 +195,12 @@ function handleSubmit(e) {
     err.classList.add('show');
     return;
   }
+  var termsCheck = document.getElementById('entrepreneurTermsCheck');
+  if (!termsCheck.classList.contains('checked')) {
+    errTxt.textContent = 'Please read and agree to the Terms & Conditions before submitting.';
+    err.classList.add('show');
+    return;
+  }
   err.classList.remove('show');
 
   // Submit to Netlify
@@ -209,5 +221,119 @@ function handleSubmit(e) {
   });
 }
 </script>
+<!-- ══ ENTREPRENEUR TERMS & CONDITIONS MODAL ══ -->
+<div id="entrepreneurTermsModal" onclick="if(event.target===this)closeEntrepreneurTerms()" style="display:none;position:fixed;inset:0;background:rgba(15,28,23,.5);z-index:9999;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:20px;max-width:600px;width:100%;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(15,28,23,.2)">
+    <div style="padding:24px 28px 16px;border-bottom:1px solid rgba(15,28,23,.08);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+      <div>
+        <div style="font-family:'DM Serif Display',Georgia,serif;font-size:20px;color:#0F1C17">Manbi Entrepreneur Terms & Conditions</div>
+        <div style="font-size:12px;color:rgba(15,28,23,.45);margin-top:3px">Please read carefully before submitting your application</div>
+      </div>
+      <button onclick="closeEntrepreneurTerms()" style="background:rgba(15,28,23,.07);border:none;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;color:#0F1C17;display:flex;align-items:center;justify-content:center">✕</button>
+    </div>
+    <div style="padding:24px 28px;overflow-y:auto;line-height:1.7;color:#0F1C17;font-size:14px">
+
+      <p style="color:rgba(15,28,23,.6);margin-bottom:24px">Welcome to Manbi. By creating an entrepreneur account, applying for funding, or accepting capital on our platform, you agree to be bound by the following Terms and Conditions. Please read them carefully before submitting your loan application.</p>
+
+      <div style="margin-bottom:20px">
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px;color:#0F1C17">1. Purpose of the Capital</div>
+        <p style="color:rgba(15,28,23,.7)">Manbi provides interest-free financial assistance funded by social-impact lenders. You explicitly agree that any funds disbursed to you will be used solely for the business activities, agricultural inputs, or operational equipment specified in your application profile. Using these funds for unrelated personal expenses is a violation of these terms.</p>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px;color:#0F1C17">2. Interest-Free Nature of the Loan</div>
+        <p style="color:rgba(15,28,23,.7)">Manbi is committed to your economic growth. All loans provided through the platform are entirely interest-free (0% interest). You are only required to pay back the exact principal amount disbursed to you, subject to any standard third-party mobile money transaction fees.</p>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px;color:#0F1C17">3. The Repayment Commitment and Tracks</div>
+        <p style="color:rgba(15,28,23,.7)">You agree to honor your scheduled repayment milestones via secure Mobile Money rails. Your specific schedule is determined by your industry track:</p>
+        <ul style="margin:10px 0 0 18px;color:rgba(15,28,23,.7)">
+          <li style="margin-bottom:6px"><strong>Urban Business Track:</strong> If you run a market shop, artisan business, or trade, your repayments will be split into equal monthly installments over your loan duration.</li>
+          <li><strong>Agricultural Track:</strong> If you are a farmer, you will receive a customized grace period during your planting and cultivation phase, during which your scheduled payment is 0 GHS. You agree to make your lump-sum or staged payments during your designated harvest and sales window.</li>
+        </ul>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px;color:#0F1C17">4. Proactive Communication and Hardship Restructuring</div>
+        <p style="color:rgba(15,28,23,.7)">We understand that real life involves unexpected challenges, such as crop failure, extreme weather, medical emergencies, or market disruptions. If you realize you cannot meet an upcoming repayment milestone, you agree to contact your local Manbi community officer immediately before the deadline. If your hardship is verified, Manbi reserves the right to restructure your timeline, providing a compassionate extension without penalties.</p>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px;color:#0F1C17">5. Consequences of Default and Non-Cooperation</div>
+        <p style="color:rgba(15,28,23,.7)">If you miss a repayment milestone and fail to communicate, or if you refuse to repay without a verifiable reason, the platform will execute the following measures:</p>
+        <ul style="margin:10px 0 0 18px;color:rgba(15,28,23,.7)">
+          <li style="margin-bottom:6px">Your Manbi account will be immediately suspended.</li>
+          <li style="margin-bottom:6px">You will lose all permanent access to future interest-free capital on the platform.</li>
+          <li style="margin-bottom:6px">Your internal platform credit rating will drop to zero.</li>
+          <li>Manbi will engage with our recognized local community partners, including market queens, farming cooperatives, or micro-credit associations, to verify your status and seek community-led resolution.</li>
+        </ul>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px;color:#0F1C17">6. Verification and Profile Accuracy</div>
+        <p style="color:rgba(15,28,23,.7)">You authorize Manbi and its representatives to verify your business location, farming operations, and identity details. You agree to provide accurate, truthful information for your platform profile, including your household and financial realities, as this information is visible to the lenders who choose to fund you.</p>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px;color:#0F1C17">7. Account Security and Mobile Money Wallet</div>
+        <p style="color:rgba(15,28,23,.7)">You are responsible for maintaining the security of your Manbi digital profile and login credentials. You must ensure that your registered Mobile Money wallet is active, valid, and registered in your name to facilitate smooth disbursements and repayments.</p>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px;color:#0F1C17">8. Modifications to Terms</div>
+        <p style="color:rgba(15,28,23,.7)">Manbi reserves the right to update these terms to comply with financial regulations in Ghana or to improve platform operations. Continued use of your entrepreneur account implies acceptance of any updated terms.</p>
+      </div>
+
+      <div style="margin-bottom:24px">
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px;color:#0F1C17">9. Governing Law</div>
+        <p style="color:rgba(15,28,23,.7)">These Terms and Conditions are governed by the laws of the Republic of Ghana. Any disputes arising from your use of the Manbi platform shall be subject to the jurisdiction of the courts of Ghana.</p>
+      </div>
+
+    </div>
+    <div style="padding:16px 28px 24px;border-top:1px solid rgba(15,28,23,.08);flex-shrink:0">
+      <button onclick="acceptEntrepreneurTerms()" style="width:100%;padding:14px;background:#1A9070;color:#fff;border:none;border-radius:50px;font-size:15px;font-weight:500;cursor:pointer;transition:all .2s">I have read and agree to these Terms →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleEntrepreneurTerms() {
+  var check = document.getElementById('entrepreneurTermsCheck');
+  if (check.classList.contains('checked')) {
+    check.classList.remove('checked');
+    check.textContent = '';
+    check.style.background = '#fff';
+    check.style.borderColor = 'rgba(15,28,23,.2)';
+    check.style.color = '';
+  } else {
+    check.classList.add('checked');
+    check.textContent = '✓';
+    check.style.background = '#1A9070';
+    check.style.borderColor = '#1A9070';
+    check.style.color = '#fff';
+  }
+}
+function openEntrepreneurTerms() {
+  document.getElementById('entrepreneurTermsModal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+function closeEntrepreneurTerms() {
+  document.getElementById('entrepreneurTermsModal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+function acceptEntrepreneurTerms() {
+  var check = document.getElementById('entrepreneurTermsCheck');
+  if (!check.classList.contains('checked')) {
+    check.classList.add('checked');
+    check.textContent = '✓';
+    check.style.background = '#1A9070';
+    check.style.borderColor = '#1A9070';
+    check.style.color = '#fff';
+  }
+  closeEntrepreneurTerms();
+}
+</script>
+
 </body>
 </html>

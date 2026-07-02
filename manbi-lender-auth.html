@@ -286,7 +286,7 @@ button{cursor:pointer;font-family:var(--fb)}
 
       <div class="terms-row" onclick="toggleTerms()">
         <div class="terms-check checked" id="termsCheck">✓</div>
-        <div class="terms-lbl">I agree to Manbi's <a href="#">Terms of Use</a> and <a href="#">Privacy Policy</a>. I understand Manbi is a zero-interest peer lending platform.</div>
+        <div class="terms-lbl">I agree to Manbi's <a href="#" onclick="event.stopPropagation();openTermsModal()">Terms of Use</a> and <a href="#">Privacy Policy</a>. I understand Manbi is a zero-interest peer lending platform.</div>
       </div>
 
       <button class="submit-btn" onclick="submitSignup()">Create my impact profile 🌱</button>
@@ -691,5 +691,100 @@ window.addEventListener('load',function(){
   });
 });
 </script>
+<!-- ══ TERMS & CONDITIONS MODAL ══ -->
+<div id="termsModal" onclick="if(event.target===this)closeTermsModal()" style="display:none;position:fixed;inset:0;background:rgba(15,28,23,.5);z-index:9999;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:20px;max-width:600px;width:100%;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(15,28,23,.2)">
+    <!-- Header -->
+    <div style="padding:24px 28px 16px;border-bottom:1px solid rgba(15,28,23,.08);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+      <div>
+        <div style="font-family:'DM Serif Display',Georgia,serif;font-size:20px;color:#0F1C17">Manbi Lender Terms & Conditions</div>
+        <div style="font-size:12px;color:rgba(15,28,23,.45);margin-top:3px">Please read carefully before creating your account</div>
+      </div>
+      <button onclick="closeTermsModal()" style="background:rgba(15,28,23,.07);border:none;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;color:#0F1C17;display:flex;align-items:center;justify-content:center">✕</button>
+    </div>
+    <!-- Scrollable content -->
+    <div style="padding:24px 28px;overflow-y:auto;line-height:1.7;color:#0F1C17;font-size:14px">
+
+      <p style="color:rgba(15,28,23,.6);margin-bottom:24px">Welcome to Manbi. By creating a lender account and choosing to fund profiles on our platform, you agree to be bound by the following Terms and Conditions. Please read them carefully before making your first contribution.</p>
+
+      <div style="margin-bottom:20px">
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px;color:#0F1C17">1. Purpose of the Platform</div>
+        <p style="color:rgba(15,28,23,.7)">Manbi is a crowdfunding platform designed to connect social-impact lenders with smallholder farmers and micro-traders in Ghana. Your funds are provided as interest-free financial assistance to help vulnerable entrepreneurs grow their businesses, support their households, and improve their communities.</p>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px;color:#0F1C17">2. Interest-Free and Non-Profit Nature of Capital</div>
+        <p style="color:rgba(15,28,23,.7)">By funding a borrower on Manbi, you explicitly understand and agree that your capital is provided at 0% interest. You will not earn any financial return, interest, or dividends on the funds you lend through this platform. The reward of your participation is purely social impact.</p>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px;color:#0F1C17">3. Nature of the Risk and Lender Acknowledgment</div>
+        <p style="color:rgba(15,28,23,.7)">While Manbi implements rigorous community vetting, local mobile money tracking, and group accountability structures to ensure high repayment rates, you acknowledge that lending to micro-entrepreneurs carries inherent risks. Crop failures, medical emergencies, inflation, and market supply disruptions can impact a borrower's ability to pay. You agree that you are lending at your own risk and that funds should only be contributed if you can afford the potential timeline extensions or losses.</p>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px;color:#0F1C17">4. Repayment and Wallet Distribution (Pay As and When)</div>
+        <p style="color:rgba(15,28,23,.7)">Manbi operates on a dynamic Pay As and When distribution model. When a borrower makes a successful repayment milestone via Mobile Money, those funds are instantly and proportionally credited back to your digital Manbi wallet. You maintain full control over your wallet balance and can choose to either withdraw your returned principal or immediately re-lend it to another active profile to multiply your impact.</p>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px;color:#0F1C17">5. The Recovery and Restructuring Process</div>
+        <p style="color:rgba(15,28,23,.7)">In the event that a borrower misses a scheduled repayment milestone due to verifiable hardship, Manbi reserves the right to restructure the loan timeline. This may include extending the grace period or adjusting the milestone dates to support the borrower through their recovery. You agree to allow the platform to manage these adjustments in a compassionate and practical manner.</p>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px;color:#0F1C17">6. Default and Protection Pool Activation</div>
+        <p style="color:rgba(15,28,23,.7)">If a loan is officially declared unrecoverable after all community and platform recovery efforts have been exhausted, Manbi will activate its internal Protection Pool. This pool, funded by grants and corporate sponsorships, aims to gradually reimburse lenders' principal balances. However, the activation of this pool is subject to available platform reserves, and Manbi does not guarantee absolute, immediate coverage for every default instance.</p>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px;color:#0F1C17">7. Fees and Transaction Costs</div>
+        <p style="color:rgba(15,28,23,.7)">Manbi does not charge lenders any hidden platform fees to list or support projects. However, third-party mobile money networks (such as MTN MoMo, Telecel Cash, or AT Money) may apply standard industry transaction fees when you deposit funds into your Manbi wallet or withdraw your returned capital to your personal mobile money account. These external network fees are borne by the user.</p>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px;color:#0F1C17">8. Account Security and Accurate Information</div>
+        <p style="color:rgba(15,28,23,.7)">You agree to provide accurate, current, and complete information during the registration process. You are entirely responsible for maintaining the confidentiality of your account login credentials and for all activities that occur under your digital wallet.</p>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px;color:#0F1C17">9. Platform Modifications</div>
+        <p style="color:rgba(15,28,23,.7)">Manbi reserves the right to modify or update these Terms and Conditions at any time to reflect software updates, regulatory changes in financial technology, or improved operational practices. Continued use of the platform following any updates constitutes your acceptance of the revised terms.</p>
+      </div>
+
+      <div style="margin-bottom:24px">
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px;color:#0F1C17">10. Governing Law</div>
+        <p style="color:rgba(15,28,23,.7)">These Terms and Conditions are governed by the laws of the Republic of Ghana. Any disputes arising from your use of the Manbi platform shall be subject to the jurisdiction of the courts of Ghana.</p>
+      </div>
+
+    </div>
+    <!-- Footer -->
+    <div style="padding:16px 28px 24px;border-top:1px solid rgba(15,28,23,.08);flex-shrink:0">
+      <button onclick="acceptTermsAndClose()" style="width:100%;padding:14px;background:#1A9070;color:#fff;border:none;border-radius:50px;font-size:15px;font-weight:500;cursor:pointer;transition:all .2s">I have read and agree to these Terms →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function openTermsModal() {
+  var modal = document.getElementById('termsModal');
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+function closeTermsModal() {
+  document.getElementById('termsModal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+function acceptTermsAndClose() {
+  // Check the terms checkbox if not already checked
+  var check = document.getElementById('termsCheck');
+  if (check && !check.classList.contains('checked')) {
+    check.classList.add('checked');
+    check.textContent = '✓';
+  }
+  closeTermsModal();
+}
+</script>
+
 </body>
 </html>
