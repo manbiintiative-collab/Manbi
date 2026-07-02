@@ -557,11 +557,14 @@ function loadApplications() {
         '<td style="max-width:200px;font-size:13px">' + (a.purpose || '').substring(0, 80) + '...</td>' +
         '<td>' + new Date(a.created_at).toLocaleDateString() + '</td>' +
         '<td><span class="status-pill sp-' + a.status + '">' + a.status + '</span></td>' +
-        '<td><button class="btn-approve btn-sm" onclick="openApprove(' + JSON.stringify(a).replace(/"/g,'&quot;') + ')">Approve →</button></td>' +
+        '<td style="display:flex;gap:6px;flex-wrap:wrap">' +
+          '<button class="btn-approve btn-sm" onclick="openApprove(' + JSON.stringify(a).replace(/"/g,'&quot;') + ')">Approve →</button>' +
+          '<button class="btn-sm" onclick="deleteApplication(' + a.id + ')" style="background:#FEF2F2;color:#C0392B;border:1px solid #FECACA;border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer">🗑 Delete</button>' +
+        '</td>' +
       '</tr>';
     }).join('');
     document.getElementById('applicationsContent').innerHTML =
-      '<table class="data-table"><thead><tr><th>Name</th><th>Community</th><th>Amount</th><th>Purpose</th><th>Date</th><th>Status</th><th>Action</th></tr></thead><tbody>' + rows + '</tbody></table>';
+      '<table class="data-table"><thead><tr><th>Name</th><th>Community</th><th>Amount</th><th>Purpose</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead><tbody>' + rows + '</tbody></table>';
   })
   .catch(function() {
     document.getElementById('applicationsContent').innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-title">Could not load applications.</div></div>';
@@ -580,12 +583,14 @@ function loadLoans() {
     }
     var rows = loans.map(function(l) {
       var pct = l.pct_funded || 0;
-      var rowStyle = l.status === 'funded' ? ' style="background:#FFFBEA"' : '';
+      var rowStyle = l.status === 'funded' ? ' style="background:#FFFBEA"' : l.suspended ? ' style="background:#FEF2F2"' : '';
       var scheduleBtn = (l.status === 'disbursed' || l.status === 'repaid')
         ? '<button class="btn-sm btn-outline" onclick="openRepaymentSchedule(' + l.id + ',\'' + l.entrepreneur_name + '\')" style="margin-top:6px;font-size:11px">📅 Repayments</button>'
         : '';
+      var suspendLabel = l.suspended ? '▶ Unsuspend' : '⏸ Suspend';
+      var suspendStyle = l.suspended ? 'background:#E6F7F3;color:#0D5C48' : 'background:#FDF4DC;color:#7A5500';
       return '<tr' + rowStyle + '>' +
-        '<td><strong>' + l.entrepreneur_name + '</strong><br><span style="font-size:12px;color:var(--ink60)">' + l.location + '</span>' + (scheduleBtn ? '<br>' + scheduleBtn : '') + '</td>' +
+        '<td><strong>' + l.entrepreneur_name + '</strong><br><span style="font-size:12px;color:var(--ink60)">' + l.location + '</span>' + (l.suspended ? ' <span style="font-size:10px;color:#C0392B;font-weight:600">SUSPENDED</span>' : '') + (scheduleBtn ? '<br>' + scheduleBtn : '') + '</td>' +
         '<td><span class="status-pill sp-' + l.sector + '" style="background:var(--t50);color:var(--t700)">' + l.sector + '</span></td>' +
         '<td>GHS ' + parseFloat(l.goal_amount).toLocaleString() + '</td>' +
         '<td>' +
@@ -595,8 +600,8 @@ function loadLoans() {
           '</div>' +
         '</td>' +
         '<td><span class="status-pill sp-' + l.status + '">' + l.status + '</span></td>' +
-        '<td>' +
-          '<select onchange="updateLoanStatus(' + l.id + ',this.value)" style="border:1px solid var(--ink12);border-radius:8px;padding:5px 8px;font-size:12px;background:#fff">' +
+        '<td style="min-width:160px">' +
+          '<select onchange="updateLoanStatus(' + l.id + ',this.value)" style="border:1px solid var(--ink12);border-radius:8px;padding:5px 8px;font-size:12px;background:#fff;width:100%;margin-bottom:6px">' +
           '<option value="">Change status</option>' +
           '<option value="active">Active</option>' +
           '<option value="funded">Funded</option>' +
@@ -604,11 +609,15 @@ function loadLoans() {
           '<option value="repaid">Repaid</option>' +
           '<option value="closed">Closed</option>' +
           '</select>' +
+          '<div style="display:flex;gap:4px">' +
+          '<button onclick="toggleSuspendLoan(' + l.id + ',' + (l.suspended ? 'false' : 'true') + ')" style="flex:1;' + suspendStyle + ';border:1px solid var(--ink12);border-radius:8px;padding:4px 6px;font-size:11px;cursor:pointer">' + suspendLabel + '</button>' +
+          '<button onclick="deleteLoan(' + l.id + ',\'' + l.entrepreneur_name + '\',' + parseFloat(l.raised||0) + ')" style="flex:1;background:#FEF2F2;color:#C0392B;border:1px solid #FECACA;border-radius:8px;padding:4px 6px;font-size:11px;cursor:pointer">🗑 Delete</button>' +
+          '</div>' +
         '</td>' +
       '</tr>';
     }).join('');
     document.getElementById('loansContent').innerHTML =
-      '<table class="data-table"><thead><tr><th>Entrepreneur</th><th>Sector</th><th>Goal</th><th>Progress</th><th>Status</th><th>Update</th></tr></thead><tbody>' + rows + '</tbody></table>';
+      '<table class="data-table"><thead><tr><th>Entrepreneur</th><th>Sector</th><th>Goal</th><th>Progress</th><th>Status</th><th>Actions</th></tr></thead><tbody>' + rows + '</tbody></table>';
   })
   .catch(function() {
     document.getElementById('loansContent').innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-title">Could not load loans.</div></div>';
@@ -631,17 +640,26 @@ function loadLenders() {
         ? '<img src="' + l.profile_photo_url + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:8px">'
         : '<span style="display:inline-flex;width:32px;height:32px;border-radius:50%;background:var(--t50);color:var(--t700);align-items:center;justify-content:center;font-size:12px;font-weight:600;vertical-align:middle;margin-right:8px">' + (l.fname||'?')[0].toUpperCase() + '</span>';
       var joined = new Date(l.created_at).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'});
-      return '<tr>' +
-        '<td>' + avatar + '<strong>' + name.trim() + '</strong><br><span style="font-size:11px;color:var(--ink60);margin-left:40px">' + (l.email||'') + '</span></td>' +
+      var suspendLabel = l.suspended ? '▶ Unsuspend' : '⏸ Suspend';
+      var suspendStyle = l.suspended ? 'background:#E6F7F3;color:#0D5C48' : 'background:#FDF4DC;color:#7A5500';
+      var rowStyle = l.suspended ? ' style="background:#FEF2F2"' : '';
+      return '<tr' + rowStyle + '>' +
+        '<td>' + avatar + '<strong>' + name.trim() + '</strong>' + (l.suspended ? ' <span style="font-size:10px;color:#C0392B;font-weight:600">SUSPENDED</span>' : '') + '<br><span style="font-size:11px;color:var(--ink60);margin-left:40px">' + (l.email||'') + '</span></td>' +
         '<td>' + (l.momo_number || '—') + '<br><span style="font-size:11px;color:var(--ink60)">' + (l.momo_network || '') + '</span></td>' +
         '<td style="font-weight:600;color:var(--t700)">GHS ' + parseFloat(l.vault_balance||0).toLocaleString() + '</td>' +
         '<td>' + parseInt(l.loans_funded||0) + ' loans<br><span style="font-size:11px;color:var(--ink60)">GHS ' + parseFloat(l.total_funded||0).toLocaleString() + ' total</span></td>' +
         '<td><span class="status-pill" style="background:var(--t50);color:var(--t700)">' + (l.level||'Seed Sower') + '</span></td>' +
         '<td style="font-size:12px;color:var(--ink60)">' + joined + '</td>' +
+        '<td>' +
+          '<div style="display:flex;gap:4px;flex-direction:column">' +
+          '<button onclick="toggleSuspendLender(' + l.id + ',' + (l.suspended ? 'false' : 'true') + ')" style="' + suspendStyle + ';border:1px solid var(--ink12);border-radius:8px;padding:4px 8px;font-size:11px;cursor:pointer;white-space:nowrap">' + suspendLabel + '</button>' +
+          '<button onclick="deleteLender(' + l.id + ',\'' + name.trim() + '\',' + parseFloat(l.vault_balance||0) + ',' + parseInt(l.loans_funded||0) + ')" style="background:#FEF2F2;color:#C0392B;border:1px solid #FECACA;border-radius:8px;padding:4px 8px;font-size:11px;cursor:pointer">🗑 Delete</button>' +
+          '</div>' +
+        '</td>' +
       '</tr>';
     }).join('');
     document.getElementById('lendersContent').innerHTML =
-      '<table class="data-table"><thead><tr><th>Lender</th><th>MoMo</th><th>Vault Balance</th><th>Activity</th><th>Level</th><th>Joined</th></tr></thead><tbody>' + rows + '</tbody></table>';
+      '<table class="data-table"><thead><tr><th>Lender</th><th>MoMo</th><th>Vault Balance</th><th>Activity</th><th>Level</th><th>Joined</th><th>Actions</th></tr></thead><tbody>' + rows + '</tbody></table>';
   })
   .catch(function() {
     document.getElementById('lendersContent').innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-title">Could not load lenders.</div></div>';
@@ -911,6 +929,102 @@ function clearAddForm() {
   ['purposeCount','repayCount','narrativeCount','partnerDescCount'].forEach(function(id) {
     document.getElementById(id).textContent = '0';
   });
+}
+
+// ── DELETE APPLICATION ──
+function deleteApplication(id) {
+  if (!confirm('Permanently delete this application? This cannot be undone.')) return;
+  fetch(API + '/admin/applications/' + id, {
+    method: 'DELETE',
+    headers: authHeaders()
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.error) { showToast(data.error, 'error'); return; }
+    showToast('Application deleted.', 'success');
+    loadApplications();
+  })
+  .catch(function() { showToast('Failed to delete application.', 'error'); });
+}
+
+// ── SUSPEND / UNSUSPEND LOAN ──
+function toggleSuspendLoan(id, suspend) {
+  var action = suspend ? 'Suspend' : 'Unsuspend';
+  if (!confirm(action + ' this loan listing? ' + (suspend ? 'It will be hidden from public view.' : 'It will become visible again.'))) return;
+  fetch(API + '/admin/loans/' + id + '/suspend', {
+    method: 'PATCH',
+    headers: Object.assign({'Content-Type': 'application/json'}, authHeaders()),
+    body: JSON.stringify({ suspended: suspend })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.error) { showToast(data.error, 'error'); return; }
+    showToast('Loan listing ' + (suspend ? 'suspended' : 'unsuspended') + '.', 'success');
+    loadLoans();
+  })
+  .catch(function() { showToast('Failed to update loan.', 'error'); });
+}
+
+// ── DELETE LOAN ──
+function deleteLoan(id, name, raised) {
+  if (raised > 0) {
+    showToast('Cannot delete — this loan has received GHS ' + raised.toFixed(2) + ' in funding. Suspend it instead.', 'error');
+    return;
+  }
+  if (!confirm('Permanently delete ' + name + '\'s listing? This cannot be undone.')) return;
+  fetch(API + '/admin/loans/' + id, {
+    method: 'DELETE',
+    headers: authHeaders()
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.error) { showToast(data.error, 'error'); return; }
+    showToast(name + '\'s listing has been deleted.', 'success');
+    loadLoans();
+  })
+  .catch(function() { showToast('Failed to delete listing.', 'error'); });
+}
+
+// ── SUSPEND / UNSUSPEND LENDER ──
+function toggleSuspendLender(id, suspend) {
+  var action = suspend ? 'Suspend' : 'Unsuspend';
+  if (!confirm(action + ' this lender account? ' + (suspend ? 'They will not be able to log in.' : 'They will regain access.'))) return;
+  fetch(API + '/admin/lenders/' + id + '/suspend', {
+    method: 'PATCH',
+    headers: Object.assign({'Content-Type': 'application/json'}, authHeaders()),
+    body: JSON.stringify({ suspended: suspend })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.error) { showToast(data.error, 'error'); return; }
+    showToast('Lender account ' + (suspend ? 'suspended' : 'unsuspended') + '.', 'success');
+    loadLenders();
+  })
+  .catch(function() { showToast('Failed to update lender.', 'error'); });
+}
+
+// ── DELETE LENDER ──
+function deleteLender(id, name, vaultBalance, loansFunded) {
+  if (vaultBalance > 0) {
+    showToast('Cannot delete — ' + name + ' has GHS ' + vaultBalance.toFixed(2) + ' in their vault. Suspend instead.', 'error');
+    return;
+  }
+  if (loansFunded > 0) {
+    showToast('Cannot delete — ' + name + ' has funded loans on record. Suspend instead.', 'error');
+    return;
+  }
+  if (!confirm('Permanently delete ' + name + '\'s account? This cannot be undone.')) return;
+  fetch(API + '/admin/lenders/' + id, {
+    method: 'DELETE',
+    headers: authHeaders()
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.error) { showToast(data.error, 'error'); return; }
+    showToast(name + '\'s account has been deleted.', 'success');
+    loadLenders();
+  })
+  .catch(function() { showToast('Failed to delete lender.', 'error'); });
 }
 
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
