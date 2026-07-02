@@ -155,6 +155,18 @@ nav{background:#fff!important;border-bottom:1px solid var(--ink12);min-height:62
 
 /* ── MY LOANS ── */
 .my-loans-list{display:flex;flex-direction:column;gap:12px}
+/* Lender repayment schedule modal */
+.lrs-installment{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;border:1px solid var(--ink12);background:#fff;margin-bottom:8px}
+.lrs-num{width:32px;height:32px;border-radius:50%;background:var(--ink12);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--ink60);flex-shrink:0}
+.lrs-num.paid{background:var(--t400);color:#fff}
+.lrs-num.grace{background:#E8EAFF;color:#4F46E5}
+.lrs-info{flex:1}
+.lrs-month{font-size:13px;font-weight:600;color:var(--ink)}
+.lrs-date{font-size:12px;color:var(--ink60)}
+.lrs-amount{font-size:14px;font-weight:600;color:var(--ink);text-align:right}
+.lrs-status{font-size:11px;margin-top:2px;text-align:right}
+.lrs-paid-label{color:var(--t500)}
+.lrs-pending-label{color:var(--ink60)}
 .my-loan-item{border:1px solid var(--ink12);border-radius:var(--radius);padding:16px 18px;display:flex;align-items:center;gap:14px;transition:border-color .2s}
 .my-loan-item:hover{border-color:var(--t400)}
 .ml-avatar{width:44px;height:44px;border-radius:50%;background:var(--t50);display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:15px;color:var(--t700);flex-shrink:0}
@@ -515,6 +527,26 @@ nav{background:#fff!important;border-bottom:1px solid var(--ink12);min-height:62
   </div>
 </div>
 
+<!-- ══ LENDER REPAYMENT SCHEDULE MODAL ══ -->
+<div class="modal-overlay" id="lenderScheduleModal" onclick="if(event.target===this)closeModal('lenderScheduleModal')">
+  <div class="modal-sheet" style="max-width:480px">
+    <div class="modal-handle"></div>
+    <button class="m-close" onclick="closeModal('lenderScheduleModal')">✕</button>
+    <div style="font-family:var(--fd);font-size:20px;color:var(--ink);margin-bottom:4px" id="lrsTitle">Repayment Schedule</div>
+    <div style="font-size:13px;color:var(--ink60);margin-bottom:20px" id="lrsSub"></div>
+    <div id="lrsProgressWrap" style="margin-bottom:20px;display:none">
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink60);margin-bottom:6px">
+        <span id="lrsPaidCount"></span>
+        <span id="lrsPct" style="color:var(--t500);font-weight:600"></span>
+      </div>
+      <div style="height:6px;background:var(--ink12);border-radius:3px;overflow:hidden">
+        <div id="lrsPctBar" style="height:100%;background:var(--t400);border-radius:3px;transition:width .4s"></div>
+      </div>
+    </div>
+    <div id="lrsContent"><div class="loading"><div class="spinner"></div>Loading...</div></div>
+  </div>
+</div>
+
 <!-- ══ CHECKOUT MODAL ══ -->
 <div class="modal-overlay" id="checkoutModal" onclick="if(event.target===this)closeModal('checkoutModal')">
   <div class="modal-sheet">
@@ -797,11 +829,12 @@ function loadDashboard(token) {
         var raised = parseFloat(l.amount_raised || l.raised || 0);
         var goal   = parseFloat(l.goal_amount || 1);
         return {
+          id:          l.id,
           av:          l.initials || (l.entrepreneur_name || '??').substring(0,2).toUpperCase(),
           name:        l.entrepreneur_name || '',
           loc:         (l.location || '') + ' · ' + (l.sector || ''),
           contributed: parseFloat(l.my_contribution || l.amount || 0),
-          status:      l.status === 'repaid' ? 'repaid' : 'active',
+          status:      l.status === 'repaid' ? 'repaid' : l.status === 'disbursed' ? 'disbursed' : 'active',
           repayPct:    Math.min(100, Math.round((raised / goal) * 100)),
           color:       '#2AB08A',
           profile_photo_url: l.profile_photo_url || null
@@ -979,35 +1012,94 @@ function applyFilter(q) {
 
 // ── MY LOANS ──
 function renderMyLoans() {
-  var statusColors = {repaid:'#534AB7', active:'#1A9070', pending:'#E6A800'};
-  var statusLabels = {repaid:'Repaid \u203a', active:'Active', pending:'Pending'};
-  var statusBg = {repaid:'#EEEDFE', active:'#E6F7F3', pending:'#FDF4DC'};
+  var statusColors = {repaid:'#534AB7', active:'#1A9070', disbursed:'#E6A800', pending:'#E6A800'};
+  var statusLabels = {repaid:'Repaid ›', active:'Active', disbursed:'Disbursed', pending:'Pending'};
+  var statusBg = {repaid:'#EEEDFE', active:'#E6F7F3', disbursed:'#FDF4DC', pending:'#FDF4DC'};
   var out = '';
+  if (!MY_LOANS.length) {
+    out = '<div style="text-align:center;padding:40px 20px"><div style="font-size:40px;margin-bottom:12px">🌱</div><div style="font-size:16px;font-weight:500;color:var(--ink);margin-bottom:6px">No loans yet</div><div style="font-size:13px;color:var(--ink60)">Browse active entrepreneurs below and fund your first loan!</div></div>';
+    document.getElementById('myLoansList').innerHTML = out;
+    return;
+  }
   for (var i = 0; i < MY_LOANS.length; i++) {
     var l = MY_LOANS[i];
+    var avHtml = l.profile_photo_url
+      ? '<img src="' + l.profile_photo_url + '" style="width:44px;height:44px;border-radius:50%;object-fit:cover">'
+      : l.av;
+    var showSchedule = (l.status === 'disbursed' || l.status === 'repaid') && l.id;
     out += '<div class="my-loan-item">';
-    out += '<div class="ml-avatar">' + l.av + '</div>';
+    out += '<div class="ml-avatar">' + avHtml + '</div>';
     out += '<div class="ml-info">';
     out += '<div class="ml-name">' + l.name + '</div>';
     out += '<div class="ml-detail">' + l.loc + '</div>';
-    if (l.status === 'active') {
-      out += '<div class="ml-progress">';
-      out += '<div class="ml-prog-row"><span>Repayment progress</span><span>' + l.repayPct + '%</span></div>';
-      out += '<div class="ml-bar"><div class="ml-bar-fill" style="width:' + l.repayPct + '%;background:' + l.color + '"></div></div>';
-      out += '</div>';
+    out += '<div class="ml-progress">';
+    out += '<div class="ml-prog-row"><span>Repayment progress</span><span>' + l.repayPct + '%</span></div>';
+    out += '<div class="ml-bar"><div class="ml-bar-fill" style="width:' + l.repayPct + '%;background:' + l.color + '"></div></div>';
+    out += '</div>';
+    if (showSchedule) {
+      out += '<button onclick="openLenderSchedule(\'' + l.id + '\',\'' + l.name + '\')" style="margin-top:8px;font-size:11px;padding:4px 12px;border:1px solid var(--t400);border-radius:20px;background:#fff;color:var(--t700);cursor:pointer;font-weight:500">📅 View repayment schedule</button>';
     }
     out += '</div>';
     out += '<div class="ml-right">';
-    out += '<div class="ml-amount">GHS ' + l.contributed + '</div>';
-    var clk = l.status === 'repaid' ? ' onclick="openRepayModal()"' : '';
-    out += '<div class="ml-status" style="background:' + statusBg[l.status] + ';color:' + statusColors[l.status] + ';cursor:' + (l.status==='repaid'?'pointer':'default') + '"' + clk + '>';
-    out += statusLabels[l.status] + '</div>';
+    out += '<div class="ml-amount">GHS ' + parseFloat(l.contributed).toFixed(2) + '</div>';
+    out += '<div class="ml-status" style="background:' + (statusBg[l.status]||'#F3F4F6') + ';color:' + (statusColors[l.status]||'#374151') + '">';
+    out += (statusLabels[l.status]||l.status) + '</div>';
     out += '</div></div>';
   }
   document.getElementById('myLoansList').innerHTML = out;
 }
 
-// ── CHECKOUT ──
+// ── LENDER REPAYMENT SCHEDULE ──
+function openLenderSchedule(loanId, name) {
+  document.getElementById('lrsTitle').textContent = name + ' — Repayment Schedule';
+  document.getElementById('lrsSub').textContent = 'Your proportional share is credited to your vault each time a repayment is marked received.';
+  document.getElementById('lrsContent').innerHTML = '<div class="loading"><div class="spinner"></div>Loading...</div>';
+  document.getElementById('lrsProgressWrap').style.display = 'none';
+  document.getElementById('lenderScheduleModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  var token = sessionStorage.getItem('manbi_token');
+  fetch(API + '/loans/' + loanId + '/schedule', {
+    headers: {'Authorization': 'Bearer ' + token}
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(schedule) {
+    if (!Array.isArray(schedule) || !schedule.length) {
+      document.getElementById('lrsContent').innerHTML = '<div style="text-align:center;padding:20px;color:var(--ink60);font-size:13px">No repayment schedule found.</div>';
+      return;
+    }
+    var paid = schedule.filter(function(s) { return s.status === 'paid'; }).length;
+    var total = schedule.length;
+    var pct = Math.round((paid / total) * 100);
+
+    document.getElementById('lrsPaidCount').textContent = paid + ' of ' + total + ' installments paid';
+    document.getElementById('lrsPct').textContent = pct + '%';
+    document.getElementById('lrsPctBar').style.width = pct + '%';
+    document.getElementById('lrsProgressWrap').style.display = 'block';
+
+    var html = '';
+    schedule.forEach(function(s) {
+      var isPaid = s.status === 'paid';
+      var isGrace = parseFloat(s.amount) === 0;
+      var dueDate = new Date(s.due_date).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'});
+      var paidDate = s.paid_at ? new Date(s.paid_at).toLocaleDateString('en-GB', {day:'numeric',month:'short'}) : null;
+      html += '<div class="lrs-installment" style="' + (isPaid ? 'background:#F0FDF4;border-color:#D1FAE5' : isGrace ? 'background:#F8F9FF;border-color:#E8EAFF' : '') + '">';
+      html += '<div class="lrs-num ' + (isPaid ? 'paid' : isGrace ? 'grace' : '') + '">' + (isPaid ? '✓' : isGrace ? '⏸' : s.installment_number) + '</div>';
+      html += '<div class="lrs-info">';
+      html += '<div class="lrs-month">Month ' + s.installment_number + (isGrace ? ' <span style="font-size:11px;color:#4F46E5;font-weight:400">(Grace)</span>' : '') + '</div>';
+      html += '<div class="lrs-date">Due: ' + dueDate + (paidDate ? ' · Paid: ' + paidDate : '') + '</div>';
+      html += '</div>';
+      html += '<div>';
+      html += '<div class="lrs-amount">GHS ' + parseFloat(s.amount).toFixed(2) + '</div>';
+      html += '<div class="lrs-status ' + (isPaid ? 'lrs-paid-label' : 'lrs-pending-label') + '">' + (isPaid ? '✓ Received' : isGrace ? '—' : 'Pending') + '</div>';
+      html += '</div></div>';
+    });
+    document.getElementById('lrsContent').innerHTML = html;
+  })
+  .catch(function() {
+    document.getElementById('lrsContent').innerHTML = '<div style="text-align:center;padding:20px;color:var(--ink60);font-size:13px">Could not load schedule.</div>';
+  });
+}
 function openCheckout(id) {
   var l = OPEN_LOANS.find(function(x){ return String(x.id) === String(id); });
   var b = l || {av:'?', name:'Entrepreneur', loc:'Ghana', pct:0};
