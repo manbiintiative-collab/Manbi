@@ -817,6 +817,8 @@ function markRepaymentPaid(repaymentId, loanId, name) {
   })
   .catch(function() { showToast('Failed to mark as paid.', 'error'); });
 }
+
+function openDisbursementModal(loanId) {
   document.getElementById('disburseBtn').onclick = function() { confirmDisbursement(loanId); };
   document.getElementById('disbursedAt').value = new Date().toISOString().split('T')[0];
   document.getElementById('disbursementModal').classList.add('open');
