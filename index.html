@@ -983,10 +983,8 @@ function submitSupport(){
 (function fetchLoans() {
   var API = 'https://manbi-backend.onrender.com/api';
   var grid = document.getElementById('loansGrid');
-  var empty = document.getElementById('loansEmpty');
   if (!grid) return;
-
-  var DEMO_LOANS = [];
+  var CURRENT_LOANS = [];
 
   function populateFeatured(loan) {
     if (!loan) return;
@@ -1018,7 +1016,6 @@ function submitSupport(){
       .catch(function() {});
   }
 
-  var CURRENT_LOANS = [];
   function renderLoans(loans) {
     loadFeatured();
     CURRENT_LOANS = loans;

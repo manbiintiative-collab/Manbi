@@ -557,7 +557,7 @@ nav{background:#fff!important;border-bottom:1px solid var(--ink12);min-height:62
       <div class="m-sub">Your contribution goes directly to the entrepreneur via mobile money.</div>
       <div class="m-entrepreneur">
         <div class="m-bav" id="mAv">KM</div>
-        <div style="flex:1"><div class="m-bname" id="mName">Kwame Mensah</div><div class="m-bloc" id="mLoc">Tamale · Farming</div></div>
+        <div style="flex:1"><div class="m-bname" id="mName"></div><div class="m-bloc" id="mLoc"></div></div>
         <div style="text-align:right"><div class="m-bpct" id="mPct">78%</div><div class="m-bfunded">funded</div></div>
       </div>
       <div class="field-lbl">How much do you want to contribute?</div>
@@ -613,34 +613,34 @@ nav{background:#fff!important;border-bottom:1px solid var(--ink12);min-height:62
     <button class="m-close" onclick="closeModal('repayModal')">✕</button>
     <div id="rp1">
       <div class="m-title">Your loan was repaid! 🎊</div>
-      <div class="m-sub">Auntie Martha has paid back in full. What would you like to do with your GHS 50?</div>
+      <div class="m-sub" id="rpSub">A loan you funded has been fully repaid. What would you like to do with your funds?</div>
       <div class="repay-hero">
         <div class="lbl">Amount returned to you</div>
-        <div class="big">GHS 50.00</div>
-        <div class="from">Your contribution · Auntie Martha · Bogoso Bakery</div>
+        <div class="big" id="rpAmount">GHS —</div>
+        <div class="from" id="rpFrom">Your contribution</div>
       </div>
       <div class="repay-options">
         <div class="ro sel-reinvest" onclick="selRepay(this,'reinvest')">
           <div class="ro-radio"></div><div class="ro-icon ri-t">🔄</div>
-          <div style="flex:1"><div class="ro-title">Reinvest in another loan</div><div class="ro-desc">Keep GHS 50 in your vault and fund the next entrepreneur.</div></div>
+          <div style="flex:1"><div class="ro-title">Reinvest in another loan</div><div class="ro-desc" id="roReinvestDesc">Keep your funds in your vault and fund the next entrepreneur.</div></div>
           <div class="ro-default">Default</div>
         </div>
         <div class="ro" onclick="selRepay(this,'cashout')">
           <div class="ro-radio"></div><div class="ro-icon ri-p">💸</div>
-          <div style="flex:1"><div class="ro-title">Cash out to MoMo</div><div class="ro-desc">Withdraw GHS 50 back to your mobile money wallet.</div></div>
+          <div style="flex:1"><div class="ro-title">Cash out to MoMo</div><div class="ro-desc" id="roCashoutDesc">Withdraw your funds back to your mobile money wallet.</div></div>
         </div>
         <div class="ro" onclick="selRepay(this,'donate')">
           <div class="ro-radio"></div><div class="ro-icon ri-g">💛</div>
-          <div style="flex:1"><div class="ro-title">Donate to Manbi</div><div class="ro-desc">Gift your GHS 50 to keep Manbi running for future entrepreneurs.</div></div>
+          <div style="flex:1"><div class="ro-title">Donate to Manbi</div><div class="ro-desc" id="roDonateDesc">Gift your funds to keep Manbi running for future entrepreneurs.</div></div>
         </div>
       </div>
-      <button class="m-confirm" id="rpBtn" onclick="submitRepay()">Reinvest GHS 50 in vault</button>
+      <button class="m-confirm" id="rpBtn" onclick="submitRepay()">Reinvest in vault</button>
     </div>
     <div id="rp2" style="display:none">
       <div class="m-success">
         <div class="success-circle" id="rpIcon">🔄</div>
         <div class="s-title" id="rpTitle">Money back in your vault!</div>
-        <div class="s-msg" id="rpMsg">GHS 50 is sitting in your vault ready for the next entrepreneur.</div>
+        <div class="s-msg" id="rpMsg">Your funds are in your vault ready for the next entrepreneur.</div>
         <button class="m-confirm" style="max-width:260px;margin:0 auto;display:block" onclick="closeModal('repayModal');switchTab('open')">Browse open loans</button>
       </div>
     </div>
@@ -686,22 +686,11 @@ nav{background:#fff!important;border-bottom:1px solid var(--ink12);min-height:62
 
 <script>
 // ── DATA ──
-let OPEN_LOANS = [
-  {id:'km',av:'KM',name:'Kwame Mensah',loc:'Tamale, Northern Region',sector:'farming',purpose:'Buying fertilizer and seeds for the coming maize season before the rains begin.',raised:780,goal:1000,pct:78},
-  {id:'as',av:'AS',name:'Ama Serwaa',loc:'Kumasi, Ashanti Region',sector:'farming',purpose:'A water pump to irrigate her tomato farm through the dry season and triple her yield.',raised:420,goal:800,pct:53},
-  {id:'ab',av:'AB',name:'Abena Boateng',loc:'Sunyani, Bono Region',sector:'retail',purpose:'Stocking her market stall with goods ahead of the busy Christmas trading season.',raised:900,goal:1200,pct:75},
-  {id:'ya',av:'YA',name:'Yaa Asantewaa Sch.',loc:'Ejura, Ashanti Region',sector:'education',purpose:'Building a small library corner for the community\'s children with books and learning tools.',raised:150,goal:600,pct:25},
-  {id:'bk',av:'BK',name:'Bernard Kusi',loc:'Cape Coast, Central Region',sector:'food',purpose:'Buying a chest freezer to preserve fish and expand his smoked fish business to more markets.',raised:600,goal:1500,pct:40},
-  {id:'ep',av:'EP',name:'Esi Poku',loc:'Takoradi, Western Region',sector:'retail',purpose:'Purchasing sewing materials and a new machine to expand her dressmaking business.',raised:350,goal:700,pct:50},
-];
+let OPEN_LOANS = [];
+let MY_LOANS = [];
+var currentLoanId = null;
 
-let MY_LOANS = [
-  {av:'AM',name:'Auntie Martha',loc:'Bogoso, Western Region · Retail',contributed:50,status:'repaid',repayPct:100,color:'#2AB08A'},
-  {av:'KM',name:'Kwame Mensah',loc:'Tamale, Northern Region · Farming',contributed:120,status:'active',repayPct:40,color:'#2AB08A'},
-  {av:'AB',name:'Abena Boateng',loc:'Sunyani, Bono Region · Retail',contributed:80,status:'active',repayPct:0,color:'#F5C842'},
-];
-
-const SECTOR_LABELS = {farming:'🌾 Farming',retail:'🛒 Retail',food:'🍞 Food',education:'📚 Education'};
+const SECTOR_LABELS = {farming:'🌾 Farming',retail:'🛒 Retail',food:'🍞 Food',education:'📚 Education',fashion:'👗 Fashion',tech:'💻 Tech',beauty:'💄 Beauty',transport:'🚐 Transport',health:'💊 Health'};
 
 let currentFilter = 'all';
 let feeOn = true;
@@ -709,7 +698,6 @@ let curRepay = 'reinvest';
 
 // ── INIT ──
 var API = 'https://manbi-backend.onrender.com/api';
-var currentLoanId = null;
 
 window.addEventListener('load', function() {
   var session = sessionStorage.getItem('manbi_lender');
@@ -821,6 +809,9 @@ function loadDashboard(token) {
       var nudgeText = document.getElementById('repayNudgeText');
       nudgeText.innerHTML = '<strong>' + repaidLoan.entrepreneur_name + ' repaid your loan!</strong> GHS ' + parseFloat(repaidLoan.my_contribution || 0).toFixed(2) + ' is back in your vault. What would you like to do with it?';
       nudgeEl.style.display = 'flex';
+      nudgeEl.querySelector('.rn-btn').onclick = function() {
+        openRepayModal(repaidLoan.entrepreneur_name, repaidLoan.my_contribution);
+      };
     }
 
     // My Loans tab
@@ -1135,17 +1126,31 @@ function selPay(el, type){
 }
 
 // ── REPAYMENT ──
-function openRepayModal(){
+function openRepayModal(loanName, amount){
+  var repaidLoan = MY_LOANS.find(function(l){ return l.status === 'repaid'; });
+  var displayName = loanName || (repaidLoan ? repaidLoan.name : 'Entrepreneur');
+  var displayAmt = amount || (repaidLoan ? repaidLoan.contributed : 0);
+  var amtStr = 'GHS ' + parseFloat(displayAmt || 0).toFixed(2);
+
+  document.getElementById('rpSub').textContent = displayName + ' has paid back in full. What would you like to do with your ' + amtStr + '?';
+  document.getElementById('rpAmount').textContent = amtStr;
+  document.getElementById('rpFrom').textContent = 'Your contribution · ' + displayName;
+  document.getElementById('roReinvestDesc').textContent = 'Keep ' + amtStr + ' in your vault and fund the next entrepreneur.';
+  document.getElementById('roCashoutDesc').textContent = 'Withdraw ' + amtStr + ' back to your mobile money wallet.';
+  document.getElementById('roDonateDesc').textContent = 'Gift your ' + amtStr + ' to keep Manbi running for future entrepreneurs.';
+
   document.getElementById('rp1').style.display='block';
   document.getElementById('rp2').style.display='none';
   curRepay='reinvest';
   document.querySelectorAll('.ro').forEach(function(o){ o.classList.remove('sel-reinvest','sel-donate','sel-cashout'); });
   document.querySelector('.ro').classList.add('sel-reinvest');
   var btn=document.getElementById('rpBtn');
-  btn.textContent='Reinvest GHS 50 in vault';
+  btn.textContent='Reinvest ' + amtStr + ' in vault';
   btn.style.background='#1A9070';
   document.getElementById('repayModal').classList.add('open');
   document.body.style.overflow='hidden';
+  window._repayAmt = amtStr;
+  window._repayName = displayName;
 }
 function selRepay(el,type){
   curRepay=type;
@@ -1153,16 +1158,18 @@ function selRepay(el,type){
   el.classList.add('sel-'+type);
   var sub=document.getElementById('cashoutSubForm');
   if(sub) sub.style.display=type==='cashout'?'block':'none';
+  var amt = window._repayAmt || 'your funds';
   var btn=document.getElementById('rpBtn');
-  var labels={reinvest:'Reinvest GHS 50 in vault',cashout:'Cash out GHS 50 to MoMo',donate:'Donate GHS 50 to Manbi'};
+  var labels={reinvest:'Reinvest ' + amt + ' in vault',cashout:'Cash out ' + amt + ' to MoMo',donate:'Donate ' + amt + ' to Manbi'};
   var colors={reinvest:'#1A9070',cashout:'#534AB7',donate:'#E6A800'};
   btn.textContent=labels[type];
   btn.style.background=colors[type];
 }
 function submitRepay(){
+  var amt = window._repayAmt || 'Your funds';
   var icons={reinvest:'\uD83D\uDD04',cashout:'\uD83D\uDCB8',donate:'\uD83D\uDC9B'};
   var titles={reinvest:'Money back in your vault!',cashout:'Withdrawal on its way!',donate:'Thank you so much!'};
-  var msgs={reinvest:'GHS 50 is in your vault, ready for the next entrepreneur.',cashout:'GHS 50 will arrive in your MoMo wallet within minutes.',donate:'Your GHS 50 goes directly to keeping Manbi alive.'};
+  var msgs={reinvest:amt + ' is in your vault, ready for the next entrepreneur.',cashout:amt + ' will arrive in your MoMo wallet within minutes.',donate:amt + ' goes directly to keeping Manbi alive.'};
   document.getElementById('rpIcon').textContent=icons[curRepay];
   document.getElementById('rpTitle').textContent=titles[curRepay];
   document.getElementById('rpMsg').textContent=msgs[curRepay];
