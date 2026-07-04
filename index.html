@@ -986,11 +986,7 @@ function submitSupport(){
   var empty = document.getElementById('loansEmpty');
   if (!grid) return;
 
-  var DEMO_LOANS = [
-    { entrepreneur_name: 'Abena Mensah', sector: 'Fashion', location: 'Kumasi', purpose: 'Expand my kente fabric stall to stock imported lace for wedding season.', goal_amount: 800, amount_raised: 560, loan_term_months: 6 },
-    { entrepreneur_name: 'Kwame Asante', sector: 'Farming', location: 'Tamale', purpose: 'Purchase fertiliser and irrigation pipes for the upcoming maize planting season.', goal_amount: 1200, amount_raised: 390, loan_term_months: 8 },
-    { entrepreneur_name: 'Ama Darkoa', sector: 'Food', location: 'Accra', purpose: 'Buy a chest freezer to keep my waakye fresh and serve the morning rush in Madina.', goal_amount: 600, amount_raised: 480, loan_term_months: 5 }
-  ];
+  var DEMO_LOANS = [];
 
   function populateFeatured(loan) {
     if (!loan) return;
@@ -1028,7 +1024,11 @@ function submitSupport(){
     CURRENT_LOANS = loans;
     var gridLoans = loans.slice(0, 3);
     grid.innerHTML = '';
-    if (gridLoans.length === 0) { empty.style.display = 'block'; return; }
+    if (gridLoans.length === 0) {
+      grid.innerHTML = '<div style="text-align:center;padding:48px 20px;grid-column:1/-1"><div style="font-size:40px;margin-bottom:14px">🌱</div><div style="font-family:\'DM Serif Display\',Georgia,serif;font-size:20px;color:#0F1C17;margin-bottom:8px">New listings coming soon</div><div style="font-size:14px;color:rgba(15,28,23,.55);line-height:1.6;max-width:380px;margin:0 auto">We\'re onboarding our first cohort of entrepreneurs. Check back shortly or apply for a loan today.</div></div>';
+      grid.classList.add('visible');
+      return;
+    }
     var emojiMap = {food:'🍲',fashion:'👗',farming:'🌾',tech:'💻',beauty:'💄',transport:'🚐',retail:'🛍',health:'💊'};
     gridLoans.forEach(function(loan) {
       var raised = parseFloat(loan.amount_raised || loan.funded_amount || 0);
@@ -1128,8 +1128,8 @@ function submitSupport(){
 
   var done = false;
   var timer = setTimeout(function() {
-    if (!done) { done = true; renderLoans(DEMO_LOANS); }
-  }, 6000);
+    if (!done) { done = true; renderLoans([]); }
+  }, 8000);
 
   fetch(API + '/loans?status=active&limit=6')
     .then(function(r) { return r.json(); })
@@ -1137,10 +1137,10 @@ function submitSupport(){
       if (done) return;
       done = true;
       clearTimeout(timer);
-      renderLoans(!loans || loans.length === 0 ? DEMO_LOANS : loans);
+      renderLoans(Array.isArray(loans) ? loans : []);
     })
     .catch(function() {
-      if (!done) { done = true; clearTimeout(timer); renderLoans(DEMO_LOANS); }
+      if (!done) { done = true; clearTimeout(timer); renderLoans([]); }
     });
 })();
 
