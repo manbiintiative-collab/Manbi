@@ -417,7 +417,19 @@ input,select,textarea{font-family:var(--fb)}
   <div class="modal" style="max-width:420px">
     <button class="m-close" onclick="closeModal('disbursementModal')">✕</button>
     <div style="font-family:var(--fd);font-size:20px;color:var(--ink);margin-bottom:8px">Confirm Disbursement</div>
-    <p style="font-size:13px;color:var(--ink60);line-height:1.6;margin-bottom:20px">This will mark the loan as disbursed and automatically generate the repayment schedule for the lenders' dashboards.</p>
+    <p style="font-size:13px;color:var(--ink60);line-height:1.6;margin-bottom:20px">This will send the loan amount to the entrepreneur via Moolre and generate the repayment schedule.</p>
+    <div style="margin-bottom:14px">
+      <div class="f-label">Entrepreneur MoMo Number</div>
+      <input type="tel" id="disbursePhone" class="f-inp" placeholder="e.g. 0241234567">
+    </div>
+    <div style="margin-bottom:14px">
+      <div class="f-label">MoMo Network</div>
+      <select id="disburseNetwork" class="f-inp">
+        <option value="mtn">MTN MoMo</option>
+        <option value="telecel">Telecel Cash</option>
+        <option value="airteltigo">AirtelTigo Money</option>
+      </select>
+    </div>
     <div style="margin-bottom:16px">
       <div class="f-label">Disbursement Date</div>
       <input type="date" id="disbursedAt" class="f-inp">
@@ -855,13 +867,19 @@ function openDisbursementModal(loanId) {
 
 function confirmDisbursement(loanId) {
   var disbursedAt = document.getElementById('disbursedAt').value;
+  var phone = document.getElementById('disbursePhone').value.trim();
+  var network = document.getElementById('disburseNetwork').value;
   var btn = document.getElementById('disburseBtn');
+
+  if (!phone) { showToast('Please enter the entrepreneur\'s MoMo number.', 'error'); return; }
+
   btn.textContent = 'Processing...';
   btn.disabled = true;
-  fetch(API + '/admin/loans/' + loanId + '/repayment-schedule', {
+
+  fetch(API + '/payments/disburse/' + loanId, {
     method: 'POST',
     headers: Object.assign({'Content-Type': 'application/json'}, authHeaders()),
-    body: JSON.stringify({ disbursed_at: disbursedAt })
+    body: JSON.stringify({ phone_number: phone, network: network, disbursed_at: disbursedAt })
   })
   .then(function(r) { return r.json(); })
   .then(function(data) {
@@ -869,7 +887,7 @@ function confirmDisbursement(loanId) {
     btn.disabled = false;
     if (data.error) { showToast(data.error, 'error'); return; }
     closeModal('disbursementModal');
-    showToast('✅ Loan marked as disbursed. Repayment schedule generated.', 'success');
+    showToast('✅ Loan disbursed successfully. Repayment schedule generated.', 'success');
     loadLoans();
   })
   .catch(function() {

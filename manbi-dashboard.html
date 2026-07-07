@@ -557,7 +557,7 @@ nav{background:#fff!important;border-bottom:1px solid var(--ink12);min-height:62
       <div class="m-sub">Your contribution goes directly to the entrepreneur via mobile money.</div>
       <div class="m-entrepreneur">
         <div class="m-bav" id="mAv">KM</div>
-        <div style="flex:1"><div class="m-bname" id="mName"></div><div class="m-bloc" id="mLoc"></div></div>
+        <div style="flex:1"><div class="m-bname" id="mName">Kwame Mensah</div><div class="m-bloc" id="mLoc">Tamale · Farming</div></div>
         <div style="text-align:right"><div class="m-bpct" id="mPct">78%</div><div class="m-bfunded">funded</div></div>
       </div>
       <div class="field-lbl">How much do you want to contribute?</div>
@@ -591,6 +591,15 @@ nav{background:#fff!important;border-bottom:1px solid var(--ink12);min-height:62
       <button class="m-confirm" id="confirmBtn" onclick="submitCheckout()">Confirm &amp; send via MoMo</button>
       <div style="text-align:center;margin-top:10px;font-size:12px;color:var(--ink60)">🔒 Secured · Funds held in escrow until fully funded</div>
     </div>
+    <div id="coWaiting" style="display:none;text-align:center;padding:20px 0">
+      <div style="font-size:48px;margin-bottom:16px">📱</div>
+      <div style="font-family:var(--fd);font-size:20px;color:var(--ink);margin-bottom:8px">Check your phone</div>
+      <div style="font-size:14px;color:var(--ink60);line-height:1.6;margin-bottom:20px">A USSD prompt has been sent to your phone. Please approve it to complete your payment.</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;color:var(--ink60);font-size:13px">
+        <div class="spinner" style="width:16px;height:16px;border-width:2px"></div>
+        Waiting for approval...
+      </div>
+    </div>
     <div id="co2" style="display:none">
       <div class="m-success">
         <div class="success-circle">🎉</div>
@@ -613,34 +622,34 @@ nav{background:#fff!important;border-bottom:1px solid var(--ink12);min-height:62
     <button class="m-close" onclick="closeModal('repayModal')">✕</button>
     <div id="rp1">
       <div class="m-title">Your loan was repaid! 🎊</div>
-      <div class="m-sub" id="rpSub">A loan you funded has been fully repaid. What would you like to do with your funds?</div>
+      <div class="m-sub">Auntie Martha has paid back in full. What would you like to do with your GHS 50?</div>
       <div class="repay-hero">
         <div class="lbl">Amount returned to you</div>
-        <div class="big" id="rpAmount">GHS —</div>
-        <div class="from" id="rpFrom">Your contribution</div>
+        <div class="big">GHS 50.00</div>
+        <div class="from">Your contribution · Auntie Martha · Bogoso Bakery</div>
       </div>
       <div class="repay-options">
         <div class="ro sel-reinvest" onclick="selRepay(this,'reinvest')">
           <div class="ro-radio"></div><div class="ro-icon ri-t">🔄</div>
-          <div style="flex:1"><div class="ro-title">Reinvest in another loan</div><div class="ro-desc" id="roReinvestDesc">Keep your funds in your vault and fund the next entrepreneur.</div></div>
+          <div style="flex:1"><div class="ro-title">Reinvest in another loan</div><div class="ro-desc">Keep GHS 50 in your vault and fund the next entrepreneur.</div></div>
           <div class="ro-default">Default</div>
         </div>
         <div class="ro" onclick="selRepay(this,'cashout')">
           <div class="ro-radio"></div><div class="ro-icon ri-p">💸</div>
-          <div style="flex:1"><div class="ro-title">Cash out to MoMo</div><div class="ro-desc" id="roCashoutDesc">Withdraw your funds back to your mobile money wallet.</div></div>
+          <div style="flex:1"><div class="ro-title">Cash out to MoMo</div><div class="ro-desc">Withdraw GHS 50 back to your mobile money wallet.</div></div>
         </div>
         <div class="ro" onclick="selRepay(this,'donate')">
           <div class="ro-radio"></div><div class="ro-icon ri-g">💛</div>
-          <div style="flex:1"><div class="ro-title">Donate to Manbi</div><div class="ro-desc" id="roDonateDesc">Gift your funds to keep Manbi running for future entrepreneurs.</div></div>
+          <div style="flex:1"><div class="ro-title">Donate to Manbi</div><div class="ro-desc">Gift your GHS 50 to keep Manbi running for future entrepreneurs.</div></div>
         </div>
       </div>
-      <button class="m-confirm" id="rpBtn" onclick="submitRepay()">Reinvest in vault</button>
+      <button class="m-confirm" id="rpBtn" onclick="submitRepay()">Reinvest GHS 50 in vault</button>
     </div>
     <div id="rp2" style="display:none">
       <div class="m-success">
         <div class="success-circle" id="rpIcon">🔄</div>
         <div class="s-title" id="rpTitle">Money back in your vault!</div>
-        <div class="s-msg" id="rpMsg">Your funds are in your vault ready for the next entrepreneur.</div>
+        <div class="s-msg" id="rpMsg">GHS 50 is sitting in your vault ready for the next entrepreneur.</div>
         <button class="m-confirm" style="max-width:260px;margin:0 auto;display:block" onclick="closeModal('repayModal');switchTab('open')">Browse open loans</button>
       </div>
     </div>
@@ -686,11 +695,22 @@ nav{background:#fff!important;border-bottom:1px solid var(--ink12);min-height:62
 
 <script>
 // ── DATA ──
-let OPEN_LOANS = [];
-let MY_LOANS = [];
-var currentLoanId = null;
+let OPEN_LOANS = [
+  {id:'km',av:'KM',name:'Kwame Mensah',loc:'Tamale, Northern Region',sector:'farming',purpose:'Buying fertilizer and seeds for the coming maize season before the rains begin.',raised:780,goal:1000,pct:78},
+  {id:'as',av:'AS',name:'Ama Serwaa',loc:'Kumasi, Ashanti Region',sector:'farming',purpose:'A water pump to irrigate her tomato farm through the dry season and triple her yield.',raised:420,goal:800,pct:53},
+  {id:'ab',av:'AB',name:'Abena Boateng',loc:'Sunyani, Bono Region',sector:'retail',purpose:'Stocking her market stall with goods ahead of the busy Christmas trading season.',raised:900,goal:1200,pct:75},
+  {id:'ya',av:'YA',name:'Yaa Asantewaa Sch.',loc:'Ejura, Ashanti Region',sector:'education',purpose:'Building a small library corner for the community\'s children with books and learning tools.',raised:150,goal:600,pct:25},
+  {id:'bk',av:'BK',name:'Bernard Kusi',loc:'Cape Coast, Central Region',sector:'food',purpose:'Buying a chest freezer to preserve fish and expand his smoked fish business to more markets.',raised:600,goal:1500,pct:40},
+  {id:'ep',av:'EP',name:'Esi Poku',loc:'Takoradi, Western Region',sector:'retail',purpose:'Purchasing sewing materials and a new machine to expand her dressmaking business.',raised:350,goal:700,pct:50},
+];
 
-const SECTOR_LABELS = {farming:'🌾 Farming',retail:'🛒 Retail',food:'🍞 Food',education:'📚 Education',fashion:'👗 Fashion',tech:'💻 Tech',beauty:'💄 Beauty',transport:'🚐 Transport',health:'💊 Health'};
+let MY_LOANS = [
+  {av:'AM',name:'Auntie Martha',loc:'Bogoso, Western Region · Retail',contributed:50,status:'repaid',repayPct:100,color:'#2AB08A'},
+  {av:'KM',name:'Kwame Mensah',loc:'Tamale, Northern Region · Farming',contributed:120,status:'active',repayPct:40,color:'#2AB08A'},
+  {av:'AB',name:'Abena Boateng',loc:'Sunyani, Bono Region · Retail',contributed:80,status:'active',repayPct:0,color:'#F5C842'},
+];
+
+const SECTOR_LABELS = {farming:'🌾 Farming',retail:'🛒 Retail',food:'🍞 Food',education:'📚 Education'};
 
 let currentFilter = 'all';
 let feeOn = true;
@@ -698,6 +718,7 @@ let curRepay = 'reinvest';
 
 // ── INIT ──
 var API = 'https://manbi-backend.onrender.com/api';
+var currentLoanId = null;
 
 window.addEventListener('load', function() {
   var session = sessionStorage.getItem('manbi_lender');
@@ -809,9 +830,6 @@ function loadDashboard(token) {
       var nudgeText = document.getElementById('repayNudgeText');
       nudgeText.innerHTML = '<strong>' + repaidLoan.entrepreneur_name + ' repaid your loan!</strong> GHS ' + parseFloat(repaidLoan.my_contribution || 0).toFixed(2) + ' is back in your vault. What would you like to do with it?';
       nudgeEl.style.display = 'flex';
-      nudgeEl.querySelector('.rn-btn').onclick = function() {
-        openRepayModal(repaidLoan.entrepreneur_name, repaidLoan.my_contribution);
-      };
     }
 
     // My Loans tab
@@ -1126,31 +1144,17 @@ function selPay(el, type){
 }
 
 // ── REPAYMENT ──
-function openRepayModal(loanName, amount){
-  var repaidLoan = MY_LOANS.find(function(l){ return l.status === 'repaid'; });
-  var displayName = loanName || (repaidLoan ? repaidLoan.name : 'Entrepreneur');
-  var displayAmt = amount || (repaidLoan ? repaidLoan.contributed : 0);
-  var amtStr = 'GHS ' + parseFloat(displayAmt || 0).toFixed(2);
-
-  document.getElementById('rpSub').textContent = displayName + ' has paid back in full. What would you like to do with your ' + amtStr + '?';
-  document.getElementById('rpAmount').textContent = amtStr;
-  document.getElementById('rpFrom').textContent = 'Your contribution · ' + displayName;
-  document.getElementById('roReinvestDesc').textContent = 'Keep ' + amtStr + ' in your vault and fund the next entrepreneur.';
-  document.getElementById('roCashoutDesc').textContent = 'Withdraw ' + amtStr + ' back to your mobile money wallet.';
-  document.getElementById('roDonateDesc').textContent = 'Gift your ' + amtStr + ' to keep Manbi running for future entrepreneurs.';
-
+function openRepayModal(){
   document.getElementById('rp1').style.display='block';
   document.getElementById('rp2').style.display='none';
   curRepay='reinvest';
   document.querySelectorAll('.ro').forEach(function(o){ o.classList.remove('sel-reinvest','sel-donate','sel-cashout'); });
   document.querySelector('.ro').classList.add('sel-reinvest');
   var btn=document.getElementById('rpBtn');
-  btn.textContent='Reinvest ' + amtStr + ' in vault';
+  btn.textContent='Reinvest GHS 50 in vault';
   btn.style.background='#1A9070';
   document.getElementById('repayModal').classList.add('open');
   document.body.style.overflow='hidden';
-  window._repayAmt = amtStr;
-  window._repayName = displayName;
 }
 function selRepay(el,type){
   curRepay=type;
@@ -1158,18 +1162,16 @@ function selRepay(el,type){
   el.classList.add('sel-'+type);
   var sub=document.getElementById('cashoutSubForm');
   if(sub) sub.style.display=type==='cashout'?'block':'none';
-  var amt = window._repayAmt || 'your funds';
   var btn=document.getElementById('rpBtn');
-  var labels={reinvest:'Reinvest ' + amt + ' in vault',cashout:'Cash out ' + amt + ' to MoMo',donate:'Donate ' + amt + ' to Manbi'};
+  var labels={reinvest:'Reinvest GHS 50 in vault',cashout:'Cash out GHS 50 to MoMo',donate:'Donate GHS 50 to Manbi'};
   var colors={reinvest:'#1A9070',cashout:'#534AB7',donate:'#E6A800'};
   btn.textContent=labels[type];
   btn.style.background=colors[type];
 }
 function submitRepay(){
-  var amt = window._repayAmt || 'Your funds';
   var icons={reinvest:'\uD83D\uDD04',cashout:'\uD83D\uDCB8',donate:'\uD83D\uDC9B'};
   var titles={reinvest:'Money back in your vault!',cashout:'Withdrawal on its way!',donate:'Thank you so much!'};
-  var msgs={reinvest:amt + ' is in your vault, ready for the next entrepreneur.',cashout:amt + ' will arrive in your MoMo wallet within minutes.',donate:amt + ' goes directly to keeping Manbi alive.'};
+  var msgs={reinvest:'GHS 50 is in your vault, ready for the next entrepreneur.',cashout:'GHS 50 will arrive in your MoMo wallet within minutes.',donate:'Your GHS 50 goes directly to keeping Manbi alive.'};
   document.getElementById('rpIcon').textContent=icons[curRepay];
   document.getElementById('rpTitle').textContent=titles[curRepay];
   document.getElementById('rpMsg').textContent=msgs[curRepay];
@@ -1203,37 +1205,111 @@ function submitCheckout(){
   var token = sessionStorage.getItem('manbi_token');
   var feeIncluded = feeOn;
   var selectedPayEl = document.querySelector('#checkoutModal .pay-method.selected .pay-name');
-  var payMethod = selectedPayEl ? selectedPayEl.textContent.replace('📱 ','').replace('🏦 ','') : 'MTN MoMo';
-  var phone = document.getElementById('phoneIn').value;
+  var payText = selectedPayEl ? selectedPayEl.textContent : 'MTN MoMo';
+  var phone = document.getElementById('phoneIn').value.trim();
 
   if(!token){ window.location.href='/login'; return; }
 
+  // Determine network from selected payment method
+  var network = 'mtn';
+  if (payText.toLowerCase().includes('telecel') || payText.toLowerCase().includes('vodafone')) network = 'telecel';
+  else if (payText.toLowerCase().includes('airteltigo') || payText.toLowerCase().includes('at')) network = 'airteltigo';
+
+  // Vault payment — use old endpoint
+  var isVault = payText.toLowerCase().includes('vault');
+  if (isVault) {
+    var btn = document.getElementById('confirmBtn');
+    btn.textContent = 'Processing...';
+    btn.disabled = true;
+    fetch(API + '/loans/' + currentLoanId + '/fund', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify({amount:amt, payment_method:'vault', phone_number:'', include_support:feeIncluded})
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      btn.disabled = false;
+      btn.textContent = 'Confirm & Pay';
+      updateSummary();
+      if(data.error){ alert(data.error); return; }
+      document.getElementById('co1').style.display='none';
+      document.getElementById('co2').style.display='block';
+      var t = sessionStorage.getItem('manbi_token');
+      if(t) loadDashboard(t);
+    })
+    .catch(function(){
+      btn.disabled = false;
+      btn.textContent = 'Confirm & Pay';
+    });
+    return;
+  }
+
+  if (!phone) { alert('Please enter your MoMo number.'); return; }
+
   var btn = document.getElementById('confirmBtn');
-  btn.textContent = 'Processing...';
+  btn.textContent = 'Sending request...';
   btn.disabled = true;
 
-  fetch(API + '/loans/' + currentLoanId + '/fund', {
+  // Initiate Moolre collection
+  fetch(API + '/payments/collect', {
     method: 'POST',
     headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
-    body: JSON.stringify({amount:amt, payment_method:payMethod, phone_number:phone, include_support:feeIncluded})
+    body: JSON.stringify({
+      loan_id: currentLoanId,
+      amount: amt,
+      phone_number: phone,
+      network: network,
+      include_support: feeIncluded
+    })
   })
   .then(function(r){ return r.json(); })
   .then(function(data){
     btn.disabled = false;
-    updateSummary();
+    btn.textContent = 'Confirm & Pay';
     if(data.error){ alert(data.error); return; }
+
+    // Show pending state — waiting for USSD approval
     document.getElementById('co1').style.display='none';
-    document.getElementById('co2').style.display='block';
-    // Reload dashboard data
-    var t = sessionStorage.getItem('manbi_token');
-    if(t) loadDashboard(t);
+    document.getElementById('coWaiting').style.display='block';
+
+    // Poll for confirmation every 5 seconds for up to 90 seconds
+    var externalRef = data.external_ref;
+    var attempts = 0;
+    var maxAttempts = 18;
+    var pollInterval = setInterval(function() {
+      attempts++;
+      fetch(API + '/payments/status', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
+        body: JSON.stringify({ external_ref: externalRef })
+      })
+      .then(function(r){ return r.json(); })
+      .then(function(statusData){
+        if (statusData.status === 'confirmed') {
+          clearInterval(pollInterval);
+          document.getElementById('coWaiting').style.display='none';
+          document.getElementById('co2').style.display='block';
+          var t = sessionStorage.getItem('manbi_token');
+          if(t) loadDashboard(t);
+        } else if (statusData.status === 'failed') {
+          clearInterval(pollInterval);
+          document.getElementById('coWaiting').style.display='none';
+          document.getElementById('co1').style.display='block';
+          alert('Payment was declined or failed. Please try again.');
+        } else if (attempts >= maxAttempts) {
+          clearInterval(pollInterval);
+          document.getElementById('coWaiting').style.display='none';
+          document.getElementById('co1').style.display='block';
+          alert('Payment timed out. If you approved the USSD prompt, your payment will be confirmed shortly. Check your dashboard.');
+        }
+      })
+      .catch(function(){});
+    }, 5000);
   })
   .catch(function(){
     btn.disabled = false;
-    updateSummary();
-    // Still show success for demo purposes
-    document.getElementById('co1').style.display='none';
-    document.getElementById('co2').style.display='block';
+    btn.textContent = 'Confirm & Pay';
+    alert('Something went wrong. Please try again.');
   });
 }
 
