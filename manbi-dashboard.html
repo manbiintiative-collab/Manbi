@@ -591,6 +591,15 @@ nav{background:#fff!important;border-bottom:1px solid var(--ink12);min-height:62
       <button class="m-confirm" id="confirmBtn" onclick="submitCheckout()">Confirm &amp; send via MoMo</button>
       <div style="text-align:center;margin-top:10px;font-size:12px;color:var(--ink60)">🔒 Secured · Funds held in escrow until fully funded</div>
     </div>
+    <div id="coOTP" style="display:none;text-align:center;padding:10px 0">
+      <div style="font-size:40px;margin-bottom:12px">🔐</div>
+      <div style="font-family:var(--fd);font-size:18px;color:var(--ink);margin-bottom:8px">Enter verification code</div>
+      <div style="font-size:13px;color:var(--ink60);line-height:1.6;margin-bottom:20px">Moolre sent a verification code to your phone. Enter it below to complete your payment.</div>
+      <input id="coOTPInput" type="number" placeholder="Enter OTP code" style="width:100%;padding:13px 14px;border:1.5px solid var(--ink12);border-radius:12px;font-size:18px;text-align:center;letter-spacing:4px;outline:none;box-sizing:border-box;margin-bottom:14px">
+      <div id="coOTPErr" style="display:none;color:#C0392B;font-size:13px;margin-bottom:10px"></div>
+      <button id="coOTPBtn" onclick="submitOTP()" style="width:100%;padding:14px;background:var(--t500);color:#fff;border:none;border-radius:50px;font-size:15px;font-weight:500;cursor:pointer">Verify & Pay →</button>
+      <button onclick="document.getElementById('coOTP').style.display='none';document.getElementById('co1').style.display='block'" style="margin-top:10px;background:none;border:none;color:var(--ink60);font-size:13px;cursor:pointer">← Back</button>
+    </div>
     <div id="coWaiting" style="display:none;text-align:center;padding:20px 0">
       <div style="font-size:48px;margin-bottom:16px">📱</div>
       <div style="font-family:var(--fd);font-size:20px;color:var(--ink);margin-bottom:8px">Check your phone</div>
@@ -673,20 +682,38 @@ nav{background:#fff!important;border-bottom:1px solid var(--ink12);min-height:62
         <button class="q-btn" onclick="setTopup(200)">GHS 200</button>
       </div>
       <div class="field-lbl">Pay via</div>
-      <div class="pay-methods">
+      <div class="pay-methods" id="topupPayMethods">
         <div class="pay-method selected" onclick="selPay(this,'momo')"><div class="pay-dot"></div><div class="pay-name">📱 MTN MoMo</div></div>
         <div class="pay-method" onclick="selPay(this,'momo')"><div class="pay-dot"></div><div class="pay-name">📱 Vodafone Cash</div></div>
         <div class="pay-method" onclick="selPay(this,'momo')"><div class="pay-dot"></div><div class="pay-name">📱 AirtelTigo</div></div>
         <div class="pay-method" onclick="selPay(this,'card')"><div class="pay-dot"></div><div class="pay-name">💳 Visa / Mastercard</div></div>
       </div>
-      <input class="phone-input" type="tel" placeholder="Your MoMo number">
-      <button class="m-confirm" onclick="submitTopup()">Top up vault →</button>
+      <input class="phone-input" id="topupPhone" type="tel" placeholder="Your MoMo number">
+      <button class="m-confirm" id="topupBtn" onclick="submitTopup()">Top up vault →</button>
+    </div>
+    <div id="tuOTP" style="display:none;text-align:center;padding:10px 0">
+      <div style="font-size:40px;margin-bottom:12px">🔐</div>
+      <div style="font-family:var(--fd);font-size:18px;color:var(--ink);margin-bottom:8px">Enter verification code</div>
+      <div style="font-size:13px;color:var(--ink60);line-height:1.6;margin-bottom:20px">Moolre sent a verification code to your phone. Enter it below to complete your top-up.</div>
+      <input id="tuOTPInput" type="number" placeholder="Enter OTP code" style="width:100%;padding:13px 14px;border:1.5px solid var(--ink12);border-radius:12px;font-size:18px;text-align:center;letter-spacing:4px;outline:none;box-sizing:border-box;margin-bottom:14px">
+      <div id="tuOTPErr" style="display:none;color:#C0392B;font-size:13px;margin-bottom:10px"></div>
+      <button id="tuOTPBtn" onclick="submitTopupOTP()" style="width:100%;padding:14px;background:var(--t500);color:#fff;border:none;border-radius:50px;font-size:15px;font-weight:500;cursor:pointer">Verify & Top up →</button>
+      <button onclick="document.getElementById('tuOTP').style.display='none';document.getElementById('tu1').style.display='block'" style="margin-top:10px;background:none;border:none;color:var(--ink60);font-size:13px;cursor:pointer">← Back</button>
+    </div>
+    <div id="tuWaiting" style="display:none;text-align:center;padding:20px 0">
+      <div style="font-size:48px;margin-bottom:16px">📱</div>
+      <div style="font-family:var(--fd);font-size:20px;color:var(--ink);margin-bottom:8px">Check your phone</div>
+      <div style="font-size:14px;color:var(--ink60);line-height:1.6;margin-bottom:20px">A USSD prompt has been sent to your phone. Please approve it to complete your top-up.</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;color:var(--ink60);font-size:13px">
+        <div class="spinner" style="width:16px;height:16px;border-width:2px"></div>
+        Waiting for approval...
+      </div>
     </div>
     <div id="tu2" style="display:none">
       <div class="m-success">
         <div class="success-circle">💚</div>
         <div class="s-title">Vault topped up!</div>
-        <div class="s-msg">Your funds will reflect in your vault within a few minutes.</div>
+        <div class="s-msg" id="topupSuccessMsg">Your funds have been added to your vault.</div>
         <button class="m-confirm" style="max-width:260px;margin:0 auto;display:block" onclick="closeModal('topupModal')">Done</button>
       </div>
     </div>
@@ -1250,7 +1277,9 @@ function submitCheckout(){
   btn.textContent = 'Sending request...';
   btn.disabled = true;
 
-  // Initiate Moolre collection
+  window._coExternalRef = null;
+  window._coToken = token;
+
   fetch(API + '/payments/collect', {
     method: 'POST',
     headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
@@ -1268,49 +1297,81 @@ function submitCheckout(){
     btn.textContent = 'Confirm & Pay';
     if(data.error){ alert(data.error); return; }
 
-    // Show pending state — waiting for USSD approval
+    window._coExternalRef = data.external_ref;
+
+    if (data.requires_otp) {
+      document.getElementById('co1').style.display='none';
+      document.getElementById('coOTP').style.display='block';
+      document.getElementById('coOTPInput').value='';
+      document.getElementById('coOTPErr').style.display='none';
+      return;
+    }
+
     document.getElementById('co1').style.display='none';
     document.getElementById('coWaiting').style.display='block';
-
-    // Poll for confirmation every 5 seconds for up to 90 seconds
-    var externalRef = data.external_ref;
-    var attempts = 0;
-    var maxAttempts = 18;
-    var pollInterval = setInterval(function() {
-      attempts++;
-      fetch(API + '/payments/status', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
-        body: JSON.stringify({ external_ref: externalRef })
-      })
-      .then(function(r){ return r.json(); })
-      .then(function(statusData){
-        if (statusData.status === 'confirmed') {
-          clearInterval(pollInterval);
-          document.getElementById('coWaiting').style.display='none';
-          document.getElementById('co2').style.display='block';
-          var t = sessionStorage.getItem('manbi_token');
-          if(t) loadDashboard(t);
-        } else if (statusData.status === 'failed') {
-          clearInterval(pollInterval);
-          document.getElementById('coWaiting').style.display='none';
-          document.getElementById('co1').style.display='block';
-          alert('Payment was declined or failed. Please try again.');
-        } else if (attempts >= maxAttempts) {
-          clearInterval(pollInterval);
-          document.getElementById('coWaiting').style.display='none';
-          document.getElementById('co1').style.display='block';
-          alert('Payment timed out. If you approved the USSD prompt, your payment will be confirmed shortly. Check your dashboard.');
-        }
-      })
-      .catch(function(){});
-    }, 5000);
+    startCoPolling(data.external_ref, token);
   })
   .catch(function(){
     btn.disabled = false;
     btn.textContent = 'Confirm & Pay';
     alert('Something went wrong. Please try again.');
   });
+}
+
+function submitOTP() {
+  var otp = document.getElementById('coOTPInput').value.trim();
+  var errEl = document.getElementById('coOTPErr');
+  var btn = document.getElementById('coOTPBtn');
+  if (!otp) { errEl.textContent = 'Please enter the OTP code.'; errEl.style.display='block'; return; }
+  btn.textContent = 'Verifying...'; btn.disabled = true; errEl.style.display='none';
+  fetch(API + '/payments/collect/otp', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','Authorization':'Bearer '+window._coToken},
+    body: JSON.stringify({ external_ref: window._coExternalRef, otpcode: otp })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    btn.textContent = 'Verify & Pay →'; btn.disabled = false;
+    if (data.error){ errEl.textContent = data.error; errEl.style.display='block'; return; }
+    document.getElementById('coOTP').style.display='none';
+    document.getElementById('coWaiting').style.display='block';
+    startCoPolling(window._coExternalRef, window._coToken);
+  })
+  .catch(function(){
+    btn.textContent = 'Verify & Pay →'; btn.disabled = false;
+    errEl.textContent = 'Something went wrong. Try again.'; errEl.style.display='block';
+  });
+}
+
+function startCoPolling(externalRef, token) {
+  var attempts = 0; var maxAttempts = 18;
+  var pollInterval = setInterval(function() {
+    attempts++;
+    fetch(API + '/payments/status', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify({ external_ref: externalRef })
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(s){
+      if (s.status === 'confirmed') {
+        clearInterval(pollInterval);
+        document.getElementById('coWaiting').style.display='none';
+        document.getElementById('co2').style.display='block';
+        var t = sessionStorage.getItem('manbi_token'); if(t) loadDashboard(t);
+      } else if (s.status === 'failed') {
+        clearInterval(pollInterval);
+        document.getElementById('coWaiting').style.display='none';
+        document.getElementById('co1').style.display='block';
+        alert('Payment was declined or failed. Please try again.');
+      } else if (attempts >= maxAttempts) {
+        clearInterval(pollInterval);
+        document.getElementById('coWaiting').style.display='none';
+        document.getElementById('co1').style.display='block';
+        alert('Payment timed out. If you approved the USSD prompt, your payment will be confirmed shortly.');
+      }
+    }).catch(function(){});
+  }, 5000);
 }
 
 // ── TOP UP ──
@@ -1322,7 +1383,122 @@ function setTopup(v){
     b.classList.toggle('active', parseInt(b.textContent.replace('GHS ',''))===v);
   });
 }
-function submitTopup(){document.getElementById('tu1').style.display='none';document.getElementById('tu2').style.display='block';}
+function submitTopup(){
+  var amt = parseFloat(document.getElementById('topupAmt').value) || 0;
+  var phone = document.getElementById('topupPhone').value.trim();
+  var token = sessionStorage.getItem('manbi_token');
+  var selectedPayEl = document.querySelector('#topupPayMethods .pay-method.selected .pay-name');
+  var payText = selectedPayEl ? selectedPayEl.textContent : 'MTN MoMo';
+
+  if (!token) { window.location.href = '/login'; return; }
+  if (amt < 10) { alert('Minimum top-up amount is GHS 10.'); return; }
+
+  var network = 'mtn';
+  if (payText.toLowerCase().includes('telecel') || payText.toLowerCase().includes('vodafone')) network = 'telecel';
+  else if (payText.toLowerCase().includes('airteltigo')) network = 'airteltigo';
+
+  if (payText.toLowerCase().includes('visa') || payText.toLowerCase().includes('mastercard')) {
+    alert('Card payments for vault top-up coming soon. Please use MoMo for now.');
+    return;
+  }
+
+  if (!phone) { alert('Please enter your MoMo number.'); return; }
+
+  var btn = document.getElementById('topupBtn');
+  btn.textContent = 'Sending request...';
+  btn.disabled = true;
+
+  fetch(API + '/payments/topup', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token},
+    body: JSON.stringify({ amount: amt, phone_number: phone, network: network })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    btn.textContent = 'Top up vault →';
+    btn.disabled = false;
+    if (data.error) { alert(data.error); return; }
+
+    window._tuExternalRef = data.external_ref;
+    window._tuToken = token;
+
+    if (data.requires_otp) {
+      document.getElementById('tu1').style.display = 'none';
+      document.getElementById('tuOTP').style.display = 'block';
+      document.getElementById('tuOTPInput').value = '';
+      document.getElementById('tuOTPErr').style.display = 'none';
+      return;
+    }
+
+    document.getElementById('tu1').style.display = 'none';
+    document.getElementById('tuWaiting').style.display = 'block';
+    startTuPolling(data.external_ref, token);
+  })
+  .catch(function() {
+    btn.textContent = 'Top up vault →';
+    btn.disabled = false;
+    alert('Something went wrong. Please try again.');
+  });
+}
+
+function submitTopupOTP() {
+  var otp = document.getElementById('tuOTPInput').value.trim();
+  var errEl = document.getElementById('tuOTPErr');
+  var btn = document.getElementById('tuOTPBtn');
+  if (!otp) { errEl.textContent = 'Please enter the OTP code.'; errEl.style.display = 'block'; return; }
+  btn.textContent = 'Verifying...'; btn.disabled = true; errEl.style.display = 'none';
+  fetch(API + '/payments/topup/otp', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + window._tuToken},
+    body: JSON.stringify({ external_ref: window._tuExternalRef, otpcode: otp })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    btn.textContent = 'Verify & Top up →'; btn.disabled = false;
+    if (data.error) { errEl.textContent = data.error; errEl.style.display = 'block'; return; }
+    document.getElementById('tuOTP').style.display = 'none';
+    document.getElementById('tuWaiting').style.display = 'block';
+    startTuPolling(window._tuExternalRef, window._tuToken);
+  })
+  .catch(function() {
+    btn.textContent = 'Verify & Top up →'; btn.disabled = false;
+    errEl.textContent = 'Something went wrong. Try again.'; errEl.style.display = 'block';
+  });
+}
+
+function startTuPolling(externalRef, token) {
+  var attempts = 0; var maxAttempts = 18;
+  var pollInterval = setInterval(function() {
+    attempts++;
+    fetch(API + '/payments/topup/status', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token},
+      body: JSON.stringify({ external_ref: externalRef })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(s) {
+      if (s.status === 'confirmed') {
+        clearInterval(pollInterval);
+        document.getElementById('tuWaiting').style.display = 'none';
+        document.getElementById('tu2').style.display = 'block';
+        if (s.new_balance !== undefined) {
+          document.getElementById('vaultAmount').textContent = 'GHS ' + parseFloat(s.new_balance).toFixed(2);
+        }
+        var t = sessionStorage.getItem('manbi_token'); if (t) loadDashboard(t);
+      } else if (s.status === 'failed') {
+        clearInterval(pollInterval);
+        document.getElementById('tuWaiting').style.display = 'none';
+        document.getElementById('tu1').style.display = 'block';
+        alert('Top-up was declined or failed. Please try again.');
+      } else if (attempts >= maxAttempts) {
+        clearInterval(pollInterval);
+        document.getElementById('tuWaiting').style.display = 'none';
+        document.getElementById('tu1').style.display = 'block';
+        alert('Top-up timed out. If you approved the USSD prompt, your vault will be credited shortly.');
+      }
+    }).catch(function() {});
+  }, 5000);
+}
 
 // ── SIGN OUT ──
 function signOut(){
