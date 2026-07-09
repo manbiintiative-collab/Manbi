@@ -1344,7 +1344,7 @@ function submitOTP() {
 }
 
 function startCoPolling(externalRef, token) {
-  var attempts = 0; var maxAttempts = 18;
+  var attempts = 0; var maxAttempts = 60; // 60 x 5s = 5 minutes, USSD delivery can be delayed
   var pollInterval = setInterval(function() {
     attempts++;
     fetch(API + '/payments/status', {
@@ -1368,7 +1368,7 @@ function startCoPolling(externalRef, token) {
         clearInterval(pollInterval);
         document.getElementById('coWaiting').style.display='none';
         document.getElementById('co1').style.display='block';
-        alert('Payment timed out. If you approved the USSD prompt, your payment will be confirmed shortly.');
+        alert('This is taking longer than usual. If you receive and approve the USSD prompt, your payment will still go through — you can check back on your dashboard in a few minutes.');
       }
     }).catch(function(){});
   }, 5000);
@@ -1467,7 +1467,7 @@ function submitTopupOTP() {
 }
 
 function startTuPolling(externalRef, token) {
-  var attempts = 0; var maxAttempts = 18;
+  var attempts = 0; var maxAttempts = 60; // 60 x 5s = 5 minutes, USSD delivery can be delayed
   var pollInterval = setInterval(function() {
     attempts++;
     fetch(API + '/payments/topup/status', {
@@ -1494,7 +1494,7 @@ function startTuPolling(externalRef, token) {
         clearInterval(pollInterval);
         document.getElementById('tuWaiting').style.display = 'none';
         document.getElementById('tu1').style.display = 'block';
-        alert('Top-up timed out. If you approved the USSD prompt, your vault will be credited shortly.');
+        alert('This is taking longer than usual. If you receive and approve the USSD prompt, your vault will still be credited — you can check back in a few minutes.');
       }
     }).catch(function() {});
   }, 5000);
