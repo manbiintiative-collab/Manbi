@@ -1409,7 +1409,20 @@ function startCoPolling(externalRef, token) {
 
 // ── TOP UP ──
 function openTopup(){document.getElementById('tu1').style.display='block';document.getElementById('tu2').style.display='none';document.getElementById('topupModal').classList.add('open');document.body.style.overflow='hidden';}
-function openWithdraw(){openTopup();}
+function openWithdraw(){
+  // Reset modal state
+  document.getElementById('wd1').style.display='block';
+  document.getElementById('wd2').style.display='none';
+  document.getElementById('wdErr').style.display='none';
+  document.getElementById('wdPhone').value='';
+  document.getElementById('wdAmt').value='';
+  // Pre-fill max amount from vault balance
+  var vaultText = document.getElementById('vaultAmount').textContent.replace('GHS ','').trim();
+  var vaultBal = parseFloat(vaultText) || 0;
+  if (vaultBal > 0) document.getElementById('wdAmt').value = vaultBal.toFixed(2);
+  document.getElementById('withdrawModal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
 function setTopup(v){
   document.getElementById('topupAmt').value=v;
   document.querySelectorAll('#topupModal .q-btn').forEach(function(b){
@@ -1562,5 +1575,98 @@ function signOut(){
   }
 }
 </script>
+<!-- ══ WITHDRAW MODAL ══ -->
+<div class="modal-overlay" id="withdrawModal" onclick="if(event.target===this)closeModal('withdrawModal')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <button class="m-close" onclick="closeModal('withdrawModal')">✕</button>
+    <div id="wd1">
+      <div class="m-title">Withdraw from vault</div>
+      <div class="m-sub">Send your vault balance to a mobile money account.</div>
+      <div class="field-lbl">Amount (GHS)</div>
+      <div class="amt-wrap"><div class="amt-curr">GHS</div><input class="amt-input" id="wdAmt" type="number" min="1" placeholder="0.00"></div>
+      <div style="font-size:12px;color:var(--ink60);margin-top:4px;margin-bottom:16px">Available: <span id="wdAvailable" style="color:var(--t500);font-weight:600"></span></div>
+      <div class="field-lbl">MoMo Network</div>
+      <div class="pay-methods" id="wdPayMethods" style="margin-bottom:14px">
+        <div class="pay-method selected" onclick="selPay(this,'momo')"><div class="pay-dot"></div><div class="pay-name">📱 MTN MoMo</div></div>
+        <div class="pay-method" onclick="selPay(this,'momo')"><div class="pay-dot"></div><div class="pay-name">📱 Telecel Cash</div></div>
+        <div class="pay-method" onclick="selPay(this,'momo')"><div class="pay-dot"></div><div class="pay-name">📱 AirtelTigo</div></div>
+      </div>
+      <div class="field-lbl">MoMo Number</div>
+      <input class="phone-input" id="wdPhone" type="tel" placeholder="e.g. 0241234567" style="margin-bottom:8px">
+      <div id="wdErr" style="display:none;background:#FEF2F2;color:#C0392B;font-size:13px;padding:10px 14px;border-radius:10px;margin-bottom:14px"></div>
+      <button class="m-confirm" id="wdBtn" onclick="submitWithdraw()">Withdraw →</button>
+    </div>
+    <div id="wd2" style="display:none">
+      <div class="m-success">
+        <div class="success-circle">💸</div>
+        <div class="s-title">Withdrawal sent!</div>
+        <div class="s-msg" id="wdSuccessMsg">Your funds are on their way to your MoMo account.</div>
+        <button class="m-confirm" style="max-width:260px;margin:0 auto;display:block" onclick="closeModal('withdrawModal')">Done</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Pre-fill available balance when modal opens
+document.addEventListener('DOMContentLoaded', function() {
+  var wdAvail = document.getElementById('wdAvailable');
+  if (wdAvail) {
+    var vaultText = document.getElementById('vaultAmount') ? document.getElementById('vaultAmount').textContent.replace('GHS ','').trim() : '0';
+    wdAvail.textContent = 'GHS ' + (parseFloat(vaultText) || 0).toFixed(2);
+  }
+});
+
+function submitWithdraw() {
+  var amt = parseFloat(document.getElementById('wdAmt').value) || 0;
+  var phone = document.getElementById('wdPhone').value.trim();
+  var errEl = document.getElementById('wdErr');
+  var btn = document.getElementById('wdBtn');
+  var token = sessionStorage.getItem('manbi_token');
+
+  errEl.style.display = 'none';
+
+  // Validate
+  var vaultText = document.getElementById('vaultAmount').textContent.replace('GHS ','').trim();
+  var vaultBal = parseFloat(vaultText) || 0;
+
+  if (!amt || amt < 1) { errEl.textContent = 'Please enter a valid amount.'; errEl.style.display='block'; return; }
+  if (amt > vaultBal) { errEl.textContent = 'Amount exceeds your vault balance of GHS ' + vaultBal.toFixed(2) + '.'; errEl.style.display='block'; return; }
+  if (!phone) { errEl.textContent = 'Please enter your MoMo number.'; errEl.style.display='block'; return; }
+  if (!token) { window.location.href='/login'; return; }
+
+  var selectedPayEl = document.querySelector('#wdPayMethods .pay-method.selected .pay-name');
+  var payText = selectedPayEl ? selectedPayEl.textContent : 'MTN MoMo';
+  var network = 'mtn';
+  if (payText.toLowerCase().includes('telecel')) network = 'telecel';
+  else if (payText.toLowerCase().includes('airteltigo')) network = 'airteltigo';
+
+  btn.textContent = 'Processing...'; btn.disabled = true;
+
+  fetch(API + '/payments/withdraw', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
+    body: JSON.stringify({ amount: amt, phone_number: phone, network: network })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    btn.textContent = 'Withdraw →'; btn.disabled = false;
+    if (data.error){ errEl.textContent = data.error; errEl.style.display='block'; return; }
+    document.getElementById('wd1').style.display='none';
+    document.getElementById('wd2').style.display='block';
+    document.getElementById('wdSuccessMsg').textContent = 'GHS ' + amt.toFixed(2) + ' is on its way to ' + phone + '.';
+    // Update vault display
+    var newBal = vaultBal - amt;
+    document.getElementById('vaultAmount').textContent = 'GHS ' + newBal.toFixed(2);
+    var t = sessionStorage.getItem('manbi_token'); if(t) loadDashboard(t);
+  })
+  .catch(function(){
+    btn.textContent = 'Withdraw →'; btn.disabled = false;
+    errEl.textContent = 'Something went wrong. Please try again.'; errEl.style.display='block';
+  });
+}
+</script>
+
 </body>
 </html>
