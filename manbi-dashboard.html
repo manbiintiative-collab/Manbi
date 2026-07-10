@@ -1409,20 +1409,6 @@ function startCoPolling(externalRef, token) {
 
 // ── TOP UP ──
 function openTopup(){document.getElementById('tu1').style.display='block';document.getElementById('tu2').style.display='none';document.getElementById('topupModal').classList.add('open');document.body.style.overflow='hidden';}
-function openWithdraw(){
-  // Reset modal state
-  document.getElementById('wd1').style.display='block';
-  document.getElementById('wd2').style.display='none';
-  document.getElementById('wdErr').style.display='none';
-  document.getElementById('wdPhone').value='';
-  document.getElementById('wdAmt').value='';
-  // Pre-fill max amount from vault balance
-  var vaultText = document.getElementById('vaultAmount').textContent.replace('GHS ','').trim();
-  var vaultBal = parseFloat(vaultText) || 0;
-  if (vaultBal > 0) document.getElementById('wdAmt').value = vaultBal.toFixed(2);
-  document.getElementById('withdrawModal').classList.add('open');
-  document.body.style.overflow='hidden';
-}
 function setTopup(v){
   document.getElementById('topupAmt').value=v;
   document.querySelectorAll('#topupModal .q-btn').forEach(function(b){
@@ -1580,6 +1566,7 @@ function signOut(){
   <div class="modal-sheet">
     <div class="modal-handle"></div>
     <button class="m-close" onclick="closeModal('withdrawModal')">✕</button>
+    <!-- Step 1: Enter details -->
     <div id="wd1">
       <div class="m-title">Withdraw from vault</div>
       <div class="m-sub">Send your vault balance to a mobile money account.</div>
@@ -1595,9 +1582,24 @@ function signOut(){
       <div class="field-lbl">MoMo Number</div>
       <input class="phone-input" id="wdPhone" type="tel" placeholder="e.g. 0241234567" style="margin-bottom:8px">
       <div id="wdErr" style="display:none;background:#FEF2F2;color:#C0392B;font-size:13px;padding:10px 14px;border-radius:10px;margin-bottom:14px"></div>
-      <button class="m-confirm" id="wdBtn" onclick="submitWithdraw()">Withdraw →</button>
+      <button class="m-confirm" id="wdBtn" onclick="validateWithdraw()">Continue →</button>
     </div>
-    <div id="wd2" style="display:none">
+    <!-- Step 2: Confirm recipient name -->
+    <div id="wd2" style="display:none;text-align:center;padding:10px 0">
+      <div style="font-size:40px;margin-bottom:12px">👤</div>
+      <div style="font-family:var(--fd);font-size:18px;color:var(--ink);margin-bottom:8px">Confirm recipient</div>
+      <div style="font-size:13px;color:var(--ink60);margin-bottom:20px">Please confirm you want to send to this account:</div>
+      <div style="background:var(--t50);border-radius:14px;padding:16px;margin-bottom:20px">
+        <div style="font-size:18px;font-weight:700;color:var(--ink)" id="wdRecipientName"></div>
+        <div style="font-size:13px;color:var(--ink60);margin-top:4px" id="wdRecipientPhone"></div>
+        <div style="font-size:20px;font-weight:700;color:var(--t700);margin-top:8px" id="wdRecipientAmt"></div>
+      </div>
+      <div id="wdConfirmErr" style="display:none;background:#FEF2F2;color:#C0392B;font-size:13px;padding:10px 14px;border-radius:10px;margin-bottom:14px"></div>
+      <button class="m-confirm" id="wdConfirmBtn" onclick="submitWithdraw()" style="margin-bottom:10px">Confirm & Send →</button>
+      <button onclick="document.getElementById('wd2').style.display='none';document.getElementById('wd1').style.display='block'" style="background:none;border:none;color:var(--ink60);font-size:13px;cursor:pointer">← Back</button>
+    </div>
+    <!-- Step 3: Success -->
+    <div id="wd3" style="display:none">
       <div class="m-success">
         <div class="success-circle">💸</div>
         <div class="s-title">Withdrawal sent!</div>
@@ -1609,60 +1611,94 @@ function signOut(){
 </div>
 
 <script>
-// Pre-fill available balance when modal opens
-document.addEventListener('DOMContentLoaded', function() {
-  var wdAvail = document.getElementById('wdAvailable');
-  if (wdAvail) {
-    var vaultText = document.getElementById('vaultAmount') ? document.getElementById('vaultAmount').textContent.replace('GHS ','').trim() : '0';
-    wdAvail.textContent = 'GHS ' + (parseFloat(vaultText) || 0).toFixed(2);
-  }
-});
+function openWithdraw(){
+  document.getElementById('wd1').style.display='block';
+  document.getElementById('wd2').style.display='none';
+  document.getElementById('wd3').style.display='none';
+  document.getElementById('wdErr').style.display='none';
+  document.getElementById('wdPhone').value='';
+  document.getElementById('wdAmt').value='';
+  var vaultText = document.getElementById('vaultAmount').textContent.replace('GHS ','').trim();
+  var vaultBal = parseFloat(vaultText) || 0;
+  document.getElementById('wdAvailable').textContent = 'GHS ' + vaultBal.toFixed(2);
+  if (vaultBal > 0) document.getElementById('wdAmt').value = vaultBal.toFixed(2);
+  document.getElementById('withdrawModal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
 
-function submitWithdraw() {
+function validateWithdraw() {
   var amt = parseFloat(document.getElementById('wdAmt').value) || 0;
   var phone = document.getElementById('wdPhone').value.trim();
   var errEl = document.getElementById('wdErr');
   var btn = document.getElementById('wdBtn');
   var token = sessionStorage.getItem('manbi_token');
-
-  errEl.style.display = 'none';
-
-  // Validate
   var vaultText = document.getElementById('vaultAmount').textContent.replace('GHS ','').trim();
   var vaultBal = parseFloat(vaultText) || 0;
+  var selectedPayEl = document.querySelector('#wdPayMethods .pay-method.selected .pay-name');
+  var payText = selectedPayEl ? selectedPayEl.textContent : 'MTN MoMo';
 
+  errEl.style.display = 'none';
   if (!amt || amt < 1) { errEl.textContent = 'Please enter a valid amount.'; errEl.style.display='block'; return; }
   if (amt > vaultBal) { errEl.textContent = 'Amount exceeds your vault balance of GHS ' + vaultBal.toFixed(2) + '.'; errEl.style.display='block'; return; }
   if (!phone) { errEl.textContent = 'Please enter your MoMo number.'; errEl.style.display='block'; return; }
   if (!token) { window.location.href='/login'; return; }
 
-  var selectedPayEl = document.querySelector('#wdPayMethods .pay-method.selected .pay-name');
-  var payText = selectedPayEl ? selectedPayEl.textContent : 'MTN MoMo';
   var network = 'mtn';
   if (payText.toLowerCase().includes('telecel')) network = 'telecel';
   else if (payText.toLowerCase().includes('airteltigo')) network = 'airteltigo';
 
-  btn.textContent = 'Processing...'; btn.disabled = true;
+  window._wdNetwork = network;
+  window._wdAmt = amt;
+  window._wdPhone = phone;
+  window._wdToken = token;
 
-  fetch(API + '/payments/withdraw', {
+  btn.textContent = 'Validating...'; btn.disabled = true;
+
+  fetch(API + '/payments/validate', {
     method: 'POST',
     headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
-    body: JSON.stringify({ amount: amt, phone_number: phone, network: network })
+    body: JSON.stringify({ phone_number: phone, network: network })
   })
   .then(function(r){ return r.json(); })
   .then(function(data){
-    btn.textContent = 'Withdraw →'; btn.disabled = false;
+    btn.textContent = 'Continue →'; btn.disabled = false;
     if (data.error){ errEl.textContent = data.error; errEl.style.display='block'; return; }
-    document.getElementById('wd1').style.display='none';
-    document.getElementById('wd2').style.display='block';
-    document.getElementById('wdSuccessMsg').textContent = 'GHS ' + amt.toFixed(2) + ' is on its way to ' + phone + '.';
-    // Update vault display
-    var newBal = vaultBal - amt;
+    document.getElementById('wdRecipientName').textContent = data.name || 'Account Verified';
+    document.getElementById('wdRecipientPhone').textContent = phone + ' · ' + payText.trim();
+    document.getElementById('wdRecipientAmt').textContent = 'GHS ' + amt.toFixed(2);
+    document.getElementById('wdConfirmErr').style.display = 'none';
+    document.getElementById('wd1').style.display = 'none';
+    document.getElementById('wd2').style.display = 'block';
+  })
+  .catch(function(){
+    btn.textContent = 'Continue →'; btn.disabled = false;
+    errEl.textContent = 'Something went wrong. Please try again.'; errEl.style.display='block';
+  });
+}
+
+function submitWithdraw() {
+  var btn = document.getElementById('wdConfirmBtn');
+  var errEl = document.getElementById('wdConfirmErr');
+  btn.textContent = 'Sending...'; btn.disabled = true; errEl.style.display='none';
+
+  fetch(API + '/payments/withdraw', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','Authorization':'Bearer '+window._wdToken},
+    body: JSON.stringify({ amount: window._wdAmt, phone_number: window._wdPhone, network: window._wdNetwork })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    btn.textContent = 'Confirm & Send →'; btn.disabled = false;
+    if (data.error){ errEl.textContent = data.error; errEl.style.display='block'; return; }
+    document.getElementById('wd2').style.display='none';
+    document.getElementById('wd3').style.display='block';
+    document.getElementById('wdSuccessMsg').textContent = 'GHS ' + window._wdAmt.toFixed(2) + ' is on its way to ' + window._wdPhone + '.';
+    var newBal = (parseFloat(document.getElementById('vaultAmount').textContent.replace('GHS ','')) || 0) - window._wdAmt;
     document.getElementById('vaultAmount').textContent = 'GHS ' + newBal.toFixed(2);
     var t = sessionStorage.getItem('manbi_token'); if(t) loadDashboard(t);
   })
   .catch(function(){
-    btn.textContent = 'Withdraw →'; btn.disabled = false;
+    btn.textContent = 'Confirm & Send →'; btn.disabled = false;
     errEl.textContent = 'Something went wrong. Please try again.'; errEl.style.display='block';
   });
 }
