@@ -594,16 +594,22 @@ nav{background:#fff!important;border-bottom:1px solid var(--ink12);min-height:62
     <div id="coOTP" style="display:none;text-align:center;padding:10px 0">
       <div style="font-size:40px;margin-bottom:12px">🔐</div>
       <div style="font-family:var(--fd);font-size:18px;color:var(--ink);margin-bottom:8px">Enter verification code</div>
-      <div style="font-size:13px;color:var(--ink60);line-height:1.6;margin-bottom:20px">Moolre sent a verification code to your phone. Enter it below to complete your payment.</div>
+      <div style="font-size:13px;color:var(--ink60);line-height:1.6;margin-bottom:20px">Moolre sent a verification code to your phone. Enter it below to verify your identity.</div>
       <input id="coOTPInput" type="number" placeholder="Enter OTP code" style="width:100%;padding:13px 14px;border:1.5px solid var(--ink12);border-radius:12px;font-size:18px;text-align:center;letter-spacing:4px;outline:none;box-sizing:border-box;margin-bottom:14px">
       <div id="coOTPErr" style="display:none;color:#C0392B;font-size:13px;margin-bottom:10px"></div>
-      <button id="coOTPBtn" onclick="submitOTP()" style="width:100%;padding:14px;background:var(--t500);color:#fff;border:none;border-radius:50px;font-size:15px;font-weight:500;cursor:pointer">Verify & Pay →</button>
+      <button id="coOTPBtn" onclick="submitOTP()" style="width:100%;padding:14px;background:var(--t500);color:#fff;border:none;border-radius:50px;font-size:15px;font-weight:500;cursor:pointer">Verify identity →</button>
       <button onclick="document.getElementById('coOTP').style.display='none';document.getElementById('co1').style.display='block'" style="margin-top:10px;background:none;border:none;color:var(--ink60);font-size:13px;cursor:pointer">← Back</button>
+    </div>
+    <div id="coTrigger" style="display:none;text-align:center;padding:20px 0">
+      <div style="font-size:48px;margin-bottom:16px">✅</div>
+      <div style="font-family:var(--fd);font-size:20px;color:var(--ink);margin-bottom:8px">Identity verified!</div>
+      <div style="font-size:14px;color:var(--ink60);line-height:1.6;margin-bottom:24px">Your identity has been confirmed. Click below to send the payment request to your phone.</div>
+      <button id="coTriggerBtn" onclick="triggerCoPayment()" style="width:100%;padding:14px;background:var(--t500);color:#fff;border:none;border-radius:50px;font-size:15px;font-weight:500;cursor:pointer">Send payment request →</button>
     </div>
     <div id="coWaiting" style="display:none;text-align:center;padding:20px 0">
       <div style="font-size:48px;margin-bottom:16px">📱</div>
       <div style="font-family:var(--fd);font-size:20px;color:var(--ink);margin-bottom:8px">Check your phone</div>
-      <div style="font-size:14px;color:var(--ink60);line-height:1.6;margin-bottom:20px">A USSD prompt has been sent to your phone. Please approve it to complete your payment.</div>
+      <div style="font-size:14px;color:var(--ink60);line-height:1.6;margin-bottom:20px">A USSD prompt has been sent to your phone. Please enter your MoMo PIN to approve the payment.</div>
       <div style="display:flex;align-items:center;justify-content:center;gap:8px;color:var(--ink60);font-size:13px">
         <div class="spinner" style="width:16px;height:16px;border-width:2px"></div>
         Waiting for approval...
@@ -694,11 +700,17 @@ nav{background:#fff!important;border-bottom:1px solid var(--ink12);min-height:62
     <div id="tuOTP" style="display:none;text-align:center;padding:10px 0">
       <div style="font-size:40px;margin-bottom:12px">🔐</div>
       <div style="font-family:var(--fd);font-size:18px;color:var(--ink);margin-bottom:8px">Enter verification code</div>
-      <div style="font-size:13px;color:var(--ink60);line-height:1.6;margin-bottom:20px">Moolre sent a verification code to your phone. Enter it below to complete your top-up.</div>
+      <div style="font-size:13px;color:var(--ink60);line-height:1.6;margin-bottom:20px">Moolre sent a verification code to your phone. Enter it below to verify your identity.</div>
       <input id="tuOTPInput" type="number" placeholder="Enter OTP code" style="width:100%;padding:13px 14px;border:1.5px solid var(--ink12);border-radius:12px;font-size:18px;text-align:center;letter-spacing:4px;outline:none;box-sizing:border-box;margin-bottom:14px">
       <div id="tuOTPErr" style="display:none;color:#C0392B;font-size:13px;margin-bottom:10px"></div>
-      <button id="tuOTPBtn" onclick="submitTopupOTP()" style="width:100%;padding:14px;background:var(--t500);color:#fff;border:none;border-radius:50px;font-size:15px;font-weight:500;cursor:pointer">Verify & Top up →</button>
+      <button id="tuOTPBtn" onclick="submitTopupOTP()" style="width:100%;padding:14px;background:var(--t500);color:#fff;border:none;border-radius:50px;font-size:15px;font-weight:500;cursor:pointer">Verify identity →</button>
       <button onclick="document.getElementById('tuOTP').style.display='none';document.getElementById('tu1').style.display='block'" style="margin-top:10px;background:none;border:none;color:var(--ink60);font-size:13px;cursor:pointer">← Back</button>
+    </div>
+    <div id="tuTrigger" style="display:none;text-align:center;padding:20px 0">
+      <div style="font-size:48px;margin-bottom:16px">✅</div>
+      <div style="font-family:var(--fd);font-size:20px;color:var(--ink);margin-bottom:8px">Identity verified!</div>
+      <div style="font-size:14px;color:var(--ink60);line-height:1.6;margin-bottom:24px">Your identity has been confirmed. Click below to send the payment request to your phone.</div>
+      <button id="tuTriggerBtn" onclick="triggerTuPayment()" style="width:100%;padding:14px;background:var(--t500);color:#fff;border:none;border-radius:50px;font-size:15px;font-weight:500;cursor:pointer">Send payment request →</button>
     </div>
     <div id="tuWaiting" style="display:none;text-align:center;padding:20px 0">
       <div style="font-size:48px;margin-bottom:16px">📱</div>
@@ -1331,15 +1343,36 @@ function submitOTP() {
   })
   .then(function(r){ return r.json(); })
   .then(function(data){
-    btn.textContent = 'Verify & Pay →'; btn.disabled = false;
+    btn.textContent = 'Verify identity →'; btn.disabled = false;
     if (data.error){ errEl.textContent = data.error; errEl.style.display='block'; return; }
     document.getElementById('coOTP').style.display='none';
+    document.getElementById('coTrigger').style.display='block';
+  })
+  .catch(function(){
+    btn.textContent = 'Verify identity →'; btn.disabled = false;
+    errEl.textContent = 'Something went wrong. Try again.'; errEl.style.display='block';
+  });
+}
+
+function triggerCoPayment() {
+  var btn = document.getElementById('coTriggerBtn');
+  btn.textContent = 'Sending...'; btn.disabled = true;
+  fetch(API + '/payments/collect/trigger', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','Authorization':'Bearer '+window._coToken},
+    body: JSON.stringify({ external_ref: window._coExternalRef })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    btn.textContent = 'Send payment request →'; btn.disabled = false;
+    if (data.error){ alert(data.error); return; }
+    document.getElementById('coTrigger').style.display='none';
     document.getElementById('coWaiting').style.display='block';
     startCoPolling(window._coExternalRef, window._coToken);
   })
   .catch(function(){
-    btn.textContent = 'Verify & Pay →'; btn.disabled = false;
-    errEl.textContent = 'Something went wrong. Try again.'; errEl.style.display='block';
+    btn.textContent = 'Send payment request →'; btn.disabled = false;
+    alert('Something went wrong. Please try again.');
   });
 }
 
@@ -1454,15 +1487,36 @@ function submitTopupOTP() {
   })
   .then(function(r) { return r.json(); })
   .then(function(data) {
-    btn.textContent = 'Verify & Top up →'; btn.disabled = false;
+    btn.textContent = 'Verify identity →'; btn.disabled = false;
     if (data.error) { errEl.textContent = data.error; errEl.style.display = 'block'; return; }
     document.getElementById('tuOTP').style.display = 'none';
+    document.getElementById('tuTrigger').style.display = 'block';
+  })
+  .catch(function() {
+    btn.textContent = 'Verify identity →'; btn.disabled = false;
+    errEl.textContent = 'Something went wrong. Try again.'; errEl.style.display = 'block';
+  });
+}
+
+function triggerTuPayment() {
+  var btn = document.getElementById('tuTriggerBtn');
+  btn.textContent = 'Sending...'; btn.disabled = true;
+  fetch(API + '/payments/topup/trigger', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + window._tuToken},
+    body: JSON.stringify({ external_ref: window._tuExternalRef })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    btn.textContent = 'Send payment request →'; btn.disabled = false;
+    if (data.error) { alert(data.error); return; }
+    document.getElementById('tuTrigger').style.display = 'none';
     document.getElementById('tuWaiting').style.display = 'block';
     startTuPolling(window._tuExternalRef, window._tuToken);
   })
   .catch(function() {
-    btn.textContent = 'Verify & Top up →'; btn.disabled = false;
-    errEl.textContent = 'Something went wrong. Try again.'; errEl.style.display = 'block';
+    btn.textContent = 'Send payment request →'; btn.disabled = false;
+    alert('Something went wrong. Please try again.');
   });
 }
 
