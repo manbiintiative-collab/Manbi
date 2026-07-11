@@ -346,11 +346,10 @@ button{cursor:pointer;font-family:var(--fb)}
         <div class="ob-dot" id="od3"></div>
       </div>
       <div class="ob-title">Make it yours 🎨</div>
-      <p class="ob-sub">Pick an avatar for your impact profile — or upload a photo. This is what the Manbi community sees. You can stay anonymous too.</p>
+      <p class="ob-sub" id="ob1Sub">Add a profile photo — this is what the Manbi community sees.</p>
 
-      <!-- Optional photo upload -->
-      <div style="margin-bottom:18px">
-        <div style="font-size:12px;font-weight:600;color:var(--ink60);letter-spacing:.4px;text-transform:uppercase;margin-bottom:10px">Profile photo (optional)</div>
+      <!-- Photo upload (primary) -->
+      <div id="photoUploadBlock" style="margin-bottom:14px">
         <div style="display:flex;align-items:center;gap:14px">
           <div id="photoPreviewWrap" style="width:64px;height:64px;border-radius:50%;background:#E6F7F3;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;overflow:hidden;border:2px solid var(--ink12)">
             <span id="photoPreviewEmoji">📷</span>
@@ -360,28 +359,34 @@ button{cursor:pointer;font-family:var(--fb)}
               <input type="file" id="photoUpload" accept="image/*" style="display:none" onchange="handlePhotoUpload(this)">
               📁 Choose photo
             </label>
-            <div style="font-size:11px;color:var(--ink60);margin-top:6px">JPG, PNG or WEBP. Max 5MB. Or skip and use an emoji below.</div>
+            <div style="font-size:11px;color:var(--ink60);margin-top:6px">JPG, PNG or WEBP. Max 5MB.</div>
           </div>
         </div>
         <div id="photoUploadStatus" style="display:none;font-size:12px;margin-top:8px;color:var(--t500)"></div>
       </div>
 
-      <div style="font-size:12px;font-weight:600;color:var(--ink60);letter-spacing:.4px;text-transform:uppercase;margin-bottom:10px">Or pick an emoji avatar</div>
+      <div style="margin-bottom:18px">
+        <a id="toggleAvatarLink" onclick="showAvatarPicker()" style="font-size:12px;font-weight:500;color:var(--t500);cursor:pointer;text-decoration:underline">Skip the photo — pick an avatar instead</a>
+      </div>
 
-      <div class="avatar-picker" id="avatarPicker">
-        <div class="av-opt selected" style="background:#E6F7F3" onclick="selAvatar(this,'🌱')">🌱</div>
-        <div class="av-opt" style="background:#FDF4DC" onclick="selAvatar(this,'⚡')">⚡</div>
-        <div class="av-opt" style="background:#EEEDFE" onclick="selAvatar(this,'🏆')">🏆</div>
-        <div class="av-opt" style="background:#F3EEF8" onclick="selAvatar(this,'🌍')">🌍</div>
-        <div class="av-opt" style="background:#E6F7F3" onclick="selAvatar(this,'💡')">💡</div>
-        <div class="av-opt" style="background:#FDF4DC" onclick="selAvatar(this,'🔥')">🔥</div>
-        <div class="av-opt" style="background:#EEEDFE" onclick="selAvatar(this,'🌟')">🌟</div>
-        <div class="av-opt" style="background:#E6F7F3" onclick="selAvatar(this,'🦁')">🦁</div>
+      <div id="avatarPickerSection" style="display:none;margin-bottom:18px">
+        <div style="font-size:12px;font-weight:600;color:var(--ink60);letter-spacing:.4px;text-transform:uppercase;margin-bottom:10px">Pick an emoji avatar</div>
+        <div class="avatar-picker" id="avatarPicker">
+          <div class="av-opt" style="background:#E6F7F3" onclick="selAvatar(this,'🌱')">🌱</div>
+          <div class="av-opt" style="background:#FDF4DC" onclick="selAvatar(this,'⚡')">⚡</div>
+          <div class="av-opt" style="background:#EEEDFE" onclick="selAvatar(this,'🏆')">🏆</div>
+          <div class="av-opt" style="background:#F3EEF8" onclick="selAvatar(this,'🌍')">🌍</div>
+          <div class="av-opt" style="background:#E6F7F3" onclick="selAvatar(this,'💡')">💡</div>
+          <div class="av-opt" style="background:#FDF4DC" onclick="selAvatar(this,'🔥')">🔥</div>
+          <div class="av-opt" style="background:#EEEDFE" onclick="selAvatar(this,'🌟')">🌟</div>
+          <div class="av-opt" style="background:#E6F7F3" onclick="selAvatar(this,'🦁')">🦁</div>
+        </div>
+        <a onclick="showPhotoUpload()" style="font-size:12px;font-weight:500;color:var(--t500);cursor:pointer;text-decoration:underline">← Use a photo instead</a>
       </div>
 
       <!-- Live preview -->
       <div style="display:flex;align-items:center;gap:14px;background:#F5F9F7;border-radius:14px;padding:14px 16px;margin-bottom:20px">
-        <div id="prevAvatar" style="width:48px;height:48px;border-radius:50%;background:#E6F7F3;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">🌱</div>
+        <div id="prevAvatar" style="width:48px;height:48px;border-radius:50%;background:#E6F7F3;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;color:var(--ink60)">📷</div>
         <div>
           <div id="prevName" style="font-size:15px;font-weight:500;color:#0F1C17">Kofi Asante</div>
           <div style="font-size:12px;color:rgba(15,28,23,.5);margin-top:2px">Seed Sower · Level 1</div>
@@ -439,7 +444,7 @@ button{cursor:pointer;font-family:var(--fb)}
 
 <script>
 let selectedNetwork = 'mtn';
-let selectedAvatar = '🌱';
+let selectedAvatar = null;
 let selectedSquad = null;
 let termsAccepted = true;
 let currentUser = null;
@@ -663,7 +668,7 @@ function loadOb3Loan() {
       var remaining = goal - raised;
       var emoji = EMOJI[(l.sector||'').toLowerCase()] || '🏪';
       var photoHtml = l.profile_photo_url
-        ? '<img src="' + l.profile_photo_url + '" alt="' + l.entrepreneur_name + '" style="width:100%;height:160px;object-fit:cover;border-radius:12px;margin-bottom:12px;display:block">'
+        ? '<img src="' + l.profile_photo_url + '" alt="' + l.entrepreneur_name + '" style="width:100%;height:190px;object-fit:cover;object-position:center 20%;border-radius:12px;margin-bottom:12px;display:block">'
         : '<div style="font-size:32px;margin-bottom:8px">' + emoji + '</div>';
       document.getElementById('ob3LoanCard').innerHTML =
         photoHtml +
@@ -685,6 +690,24 @@ function loadOb3Loan() {
 
 /* ── AVATAR ── */
 var _uploadedPhotoUrl = null;
+
+function showAvatarPicker() {
+  document.getElementById('photoUploadBlock').style.display = 'none';
+  document.getElementById('toggleAvatarLink').parentElement.style.display = 'none';
+  document.getElementById('avatarPickerSection').style.display = 'block';
+  document.getElementById('ob1Sub').textContent = 'Pick an avatar for your impact profile.';
+}
+
+function showPhotoUpload() {
+  document.getElementById('avatarPickerSection').style.display = 'none';
+  document.getElementById('photoUploadBlock').style.display = 'block';
+  document.getElementById('toggleAvatarLink').parentElement.style.display = 'block';
+  document.getElementById('ob1Sub').textContent = 'Add a profile photo — this is what the Manbi community sees.';
+  // Clear any avatar selection made while the picker was open
+  document.querySelectorAll('.av-opt').forEach(function(a){ a.classList.remove('selected'); });
+  selectedAvatar = null;
+  document.getElementById('prevAvatar').innerHTML = '📷';
+}
 
 function handlePhotoUpload(input) {
   var file = input.files[0];
