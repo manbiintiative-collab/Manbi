@@ -1876,7 +1876,8 @@ function submitDonate() {
         document.getElementById('dmOTPErr').style.display='none';
       } else {
         document.getElementById('dm1').style.display='none';
-        document.getElementById('dmTrigger').style.display='block';
+        document.getElementById('dmWaiting').style.display='block';
+        startDmPolling(data.external_ref, token);
       }
     })
     .catch(function(){btn.textContent='Donate to Manbi 💛'; btn.disabled=false; errEl.textContent='Something went wrong.'; errEl.style.display='block';});
@@ -1918,30 +1919,34 @@ function triggerDonatePayment() {
     if(data.error){alert(data.error); return;}
     document.getElementById('dmTrigger').style.display='none';
     document.getElementById('dmWaiting').style.display='block';
-    var attempts=0; var maxAttempts=18;
-    var poll=setInterval(function(){
-      attempts++;
-      fetch(API+'/payments/status',{
-        method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':'Bearer '+_dmToken},
-        body:JSON.stringify({external_ref:_dmExternalRef})
-      })
-      .then(function(r){return r.json();})
-      .then(function(s){
-        if(s.status==='confirmed'){
-          clearInterval(poll);
-          document.getElementById('dmWaiting').style.display='none';
-          document.getElementById('dm2').style.display='block';
-        } else if(s.status==='failed'||attempts>=maxAttempts){
-          clearInterval(poll);
-          document.getElementById('dmWaiting').style.display='none';
-          document.getElementById('dm1').style.display='block';
-          if(s.status==='failed') alert('Donation failed. Please try again.');
-        }
-      }).catch(function(){});
-    },5000);
+    startDmPolling(_dmExternalRef, _dmToken);
   })
   .catch(function(){btn.textContent='Send donation →'; btn.disabled=false; alert('Something went wrong.');});
+}
+
+function startDmPolling(externalRef, token) {
+  var attempts=0; var maxAttempts=18;
+  var poll=setInterval(function(){
+    attempts++;
+    fetch(API+'/payments/status',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({external_ref:externalRef})
+    })
+    .then(function(r){return r.json();})
+    .then(function(s){
+      if(s.status==='confirmed'){
+        clearInterval(poll);
+        document.getElementById('dmWaiting').style.display='none';
+        document.getElementById('dm2').style.display='block';
+      } else if(s.status==='failed'||attempts>=maxAttempts){
+        clearInterval(poll);
+        document.getElementById('dmWaiting').style.display='none';
+        document.getElementById('dm1').style.display='block';
+        if(s.status==='failed') alert('Donation failed. Please try again.');
+      }
+    }).catch(function(){});
+  },5000);
 }
 </script>
 

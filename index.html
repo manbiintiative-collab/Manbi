@@ -441,6 +441,8 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:40px 8%;display
 @media(prefers-reduced-motion:reduce){
   .reveal,.reveal-left,.reveal-scale,.stagger-children>*,.hero-content>*{opacity:1!important;transform:none!important;animation:none!important}
 }
+.sup-spinner{width:16px;height:16px;border:2px solid var(--ink12);border-top-color:var(--t500);border-radius:50%;animation:sup-spin .7s linear infinite}
+@keyframes sup-spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
@@ -849,36 +851,64 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:40px 8%;display
     <button class="m-close" onclick="closeModal('supportModal')">✕</button>
     <div id="sup1">
       <div class="m-title">Support Manbi 💛</div>
-      <div class="m-sub">Your donation keeps Manbi running so more entrepreneurs can get funded. Every cedi goes directly to operations and community expansion.</div>
+      <div class="m-sub">Your donation keeps Manbi running so more entrepreneurs can get funded. Every cedi goes directly to operations and community expansion. No account needed.</div>
       <div style="font-size:11px;font-weight:500;color:var(--ink60);letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px">Choose an amount</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
-        <div class="support-option" onclick="selSupportModal(this,'10')"><div class="so-radio"></div><div><div style="font-size:14px;font-weight:500">GHS 10</div><div style="font-size:12px;color:var(--ink60)">Buys one SMS reminder</div></div></div>
-        <div class="support-option active" onclick="selSupportModal(this,'20')"><div class="so-radio"></div><div><div style="font-size:14px;font-weight:500">GHS 20</div><div style="font-size:12px;color:var(--ink60)">Funds one agent visit</div></div></div>
-        <div class="support-option" onclick="selSupportModal(this,'50')"><div class="so-radio"></div><div><div style="font-size:14px;font-weight:500">GHS 50</div><div style="font-size:12px;color:var(--ink60)">Covers community outreach</div></div></div>
-        <div class="support-option" onclick="selSupportModal(this,'100')"><div class="so-radio"></div><div><div style="font-size:14px;font-weight:500">GHS 100</div><div style="font-size:12px;color:var(--ink60)">Sponsors a new region</div></div></div>
+        <div class="support-option" data-amount="10" onclick="selSupportModal(this,'10')"><div class="so-radio"></div><div><div style="font-size:14px;font-weight:500">GHS 10</div><div style="font-size:12px;color:var(--ink60)">Buys one SMS reminder</div></div></div>
+        <div class="support-option active" data-amount="20" onclick="selSupportModal(this,'20')"><div class="so-radio"></div><div><div style="font-size:14px;font-weight:500">GHS 20</div><div style="font-size:12px;color:var(--ink60)">Funds one agent visit</div></div></div>
+        <div class="support-option" data-amount="50" onclick="selSupportModal(this,'50')"><div class="so-radio"></div><div><div style="font-size:14px;font-weight:500">GHS 50</div><div style="font-size:12px;color:var(--ink60)">Covers community outreach</div></div></div>
+        <div class="support-option" data-amount="100" onclick="selSupportModal(this,'100')"><div class="so-radio"></div><div><div style="font-size:14px;font-weight:500">GHS 100</div><div style="font-size:12px;color:var(--ink60)">Sponsors a new region</div></div></div>
       </div>
       <div style="font-size:11px;font-weight:500;color:var(--ink60);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">Or enter a custom amount</div>
       <div style="position:relative;margin-bottom:14px">
         <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--ink60);font-weight:500">GHS</span>
         <input class="f-input" id="customSupport" type="number" placeholder="Enter amount" style="padding-left:50px;margin-bottom:0">
       </div>
+      <div style="font-size:11px;font-weight:500;color:var(--ink60);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">So we can thank you</div>
+      <input class="f-input" id="supportName" type="text" placeholder="Your name" style="margin-bottom:10px">
+      <input class="f-input" id="supportEmail" type="email" placeholder="Your email (for your thank-you note)" style="margin-bottom:14px">
       <div style="font-size:11px;font-weight:500;color:var(--ink60);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">Pay via</div>
       <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
-        <button class="sa-btn active" style="flex:1" onclick="selPaySupport(this)">📱 MTN MoMo</button>
-        <button class="sa-btn" style="flex:1" onclick="selPaySupport(this)">📱 Telecel</button>
-        <button class="sa-btn" style="flex:1" onclick="selPaySupport(this)">📱 AirtelTigo</button>
-        <button class="sa-btn" style="flex:1" onclick="selPaySupport(this)">💳 Visa / Mastercard</button>
+        <button class="sa-btn active" style="flex:1" onclick="selPaySupport(this,'mtn')">📱 MTN MoMo</button>
+        <button class="sa-btn" style="flex:1" onclick="selPaySupport(this,'telecel')">📱 Telecel</button>
+        <button class="sa-btn" style="flex:1" onclick="selPaySupport(this,'airteltigo')">📱 AirtelTigo</button>
       </div>
       <input class="f-input" id="supportPhone" type="tel" placeholder="Your MoMo number">
-      <button class="m-confirm" style="background:var(--g400)" onclick="submitSupport()">💛 Donate to Manbi</button>
+      <div id="supErr" style="display:none;background:#FEF2F2;color:#C0392B;font-size:13px;padding:10px 14px;border-radius:10px;margin:10px 0"></div>
+      <button class="m-confirm" id="supBtn" style="background:var(--g400)" onclick="submitSupport()">💛 Donate to Manbi</button>
       <div style="text-align:center;margin-top:10px;font-size:12px;color:var(--ink60)">100% goes to Manbi operations · No admin fees</div>
     </div>
     <div id="sup2" style="display:none">
       <div class="m-success">
         <div class="success-circle" style="background:var(--g100)">💛</div>
         <div class="s-title">Thank you so much!</div>
-        <div class="s-msg">Your donation helps Manbi reach more rural communities and fund more Ghanaian entrepreneurs. You are part of the change.</div>
+        <div class="s-msg" id="supSuccessMsg">Your donation helps Manbi reach more rural communities and fund more Ghanaian entrepreneurs. You are part of the change.</div>
         <button class="m-confirm" style="background:var(--g400);max-width:260px;margin:0 auto;display:block" onclick="closeModal('supportModal')">Close</button>
+      </div>
+    </div>
+    <!-- OTP step (only shown if Moolre requires it) -->
+    <div id="supOTP" style="display:none;text-align:center;padding:10px 0">
+      <div style="font-size:40px;margin-bottom:12px">🔐</div>
+      <div style="font-family:var(--fd);font-size:18px;color:var(--ink);margin-bottom:8px">Verify your identity</div>
+      <div style="font-size:13px;color:var(--ink60);line-height:1.6;margin-bottom:20px">Enter the OTP sent to your phone.</div>
+      <input id="supOTPInput" type="number" placeholder="Enter OTP code" style="width:100%;padding:13px 14px;border:1.5px solid var(--ink12);border-radius:12px;font-size:18px;text-align:center;letter-spacing:4px;outline:none;box-sizing:border-box;margin-bottom:14px">
+      <div id="supOTPErr" style="display:none;color:#C0392B;font-size:13px;margin-bottom:10px"></div>
+      <button id="supOTPBtn" class="m-confirm" style="background:var(--g400)" onclick="submitSupportOTP()">Verify identity →</button>
+      <button onclick="document.getElementById('supOTP').style.display='none';document.getElementById('sup1').style.display='block'" style="margin-top:10px;background:none;border:none;color:var(--ink60);font-size:13px;cursor:pointer">← Back</button>
+    </div>
+    <div id="supTrigger" style="display:none;text-align:center;padding:20px 0">
+      <div style="font-size:48px;margin-bottom:16px">✅</div>
+      <div style="font-family:var(--fd);font-size:20px;color:var(--ink);margin-bottom:8px">Identity verified!</div>
+      <div style="font-size:14px;color:var(--ink60);line-height:1.6;margin-bottom:24px">Click below to complete your donation.</div>
+      <button id="supTriggerBtn" class="m-confirm" style="background:var(--g400)" onclick="triggerSupportPayment()">Send donation →</button>
+    </div>
+    <div id="supWaiting" style="display:none;text-align:center;padding:20px 0">
+      <div style="font-size:48px;margin-bottom:16px">📱</div>
+      <div style="font-family:var(--fd);font-size:20px;color:var(--ink);margin-bottom:8px">Check your phone</div>
+      <div style="font-size:14px;color:var(--ink60);line-height:1.6;margin-bottom:20px">Approve the USSD prompt to complete your donation.</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;color:var(--ink60);font-size:13px">
+        <div class="sup-spinner"></div>
+        Waiting for approval...
       </div>
     </div>
   </div>
@@ -946,9 +976,17 @@ function submitInterest(){
 }
 
 /* support modal */
+var _supNetwork = 'mtn';
+var _supExternalRef = null;
+var SUPPORT_API = 'https://manbi-backend.onrender.com/api';
+
 function openSupport(){
   document.getElementById('sup1').style.display='block';
   document.getElementById('sup2').style.display='none';
+  document.getElementById('supOTP').style.display='none';
+  document.getElementById('supTrigger').style.display='none';
+  document.getElementById('supWaiting').style.display='none';
+  document.getElementById('supErr').style.display='none';
   document.getElementById('supportModal').classList.add('open');
   document.body.style.overflow='hidden';
 }
@@ -957,24 +995,122 @@ function selSupportModal(el,val){
   el.classList.add('active');
   document.getElementById('customSupport').value='';
 }
-function selPaySupport(btn){
+function selPaySupport(btn,network){
   btn.closest('div').querySelectorAll('.sa-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
+  _supNetwork = network;
 }
 function submitSupport(){
-  var phone=document.getElementById('supportPhone').value.trim();
-  if(!phone){alert('Please enter your MoMo number.');return;}
+  var errEl=document.getElementById('supErr');
+  var btn=document.getElementById('supBtn');
+  errEl.style.display='none';
+
   var activeOpt=document.querySelector('#supportModal .support-option.active');
-  var amt=document.getElementById('customSupport').value||'GHS 20';
+  var custom=document.getElementById('customSupport').value;
+  var amt = custom ? parseFloat(custom) : (activeOpt ? parseFloat(activeOpt.dataset.amount) : 20);
+  var name=document.getElementById('supportName').value.trim();
+  var email=document.getElementById('supportEmail').value.trim();
+  var phone=document.getElementById('supportPhone').value.trim();
 
-  fetch('/',{
+  if (!amt || amt < 1) { errEl.textContent='Please enter a valid amount.'; errEl.style.display='block'; return; }
+  if (!name) { errEl.textContent='Please tell us your name so we can thank you.'; errEl.style.display='block'; return; }
+  if (!email) { errEl.textContent='Please enter your email so we can send a thank-you note.'; errEl.style.display='block'; return; }
+  if (!phone) { errEl.textContent='Please enter your MoMo number.'; errEl.style.display='block'; return; }
+
+  btn.textContent='Sending request...'; btn.disabled=true;
+
+  fetch(SUPPORT_API + '/payments/donate/guest', {
     method:'POST',
-    headers:{'Content-Type':'application/x-www-form-urlencoded'},
-    body:'form-name=support-donation&amount='+encodeURIComponent(amt)+'&phone='+encodeURIComponent(phone)
-  }).catch(function(){});
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      donor_name:name, donor_email:email, amount:amt,
+      phone_number:phone, network:_supNetwork
+    })
+  })
+  .then(function(r){return r.json();})
+  .then(function(data){
+    btn.textContent='💛 Donate to Manbi'; btn.disabled=false;
+    if(data.error){errEl.textContent=data.error; errEl.style.display='block'; return;}
+    _supExternalRef=data.external_ref;
+    if(data.requires_otp){
+      document.getElementById('sup1').style.display='none';
+      document.getElementById('supOTP').style.display='block';
+      document.getElementById('supOTPInput').value='';
+      document.getElementById('supOTPErr').style.display='none';
+    } else {
+      document.getElementById('sup1').style.display='none';
+      document.getElementById('supWaiting').style.display='block';
+      startSupportPolling(data.external_ref);
+    }
+  })
+  .catch(function(){btn.textContent='💛 Donate to Manbi'; btn.disabled=false; errEl.textContent='Something went wrong. Please try again.'; errEl.style.display='block';});
+}
 
-  document.getElementById('sup1').style.display='none';
-  document.getElementById('sup2').style.display='block';
+function submitSupportOTP() {
+  var otp=document.getElementById('supOTPInput').value.trim();
+  var errEl=document.getElementById('supOTPErr');
+  var btn=document.getElementById('supOTPBtn');
+  if(!otp){errEl.textContent='Please enter the OTP code.'; errEl.style.display='block'; return;}
+  btn.textContent='Verifying...'; btn.disabled=true; errEl.style.display='none';
+  fetch(SUPPORT_API+'/payments/donate/guest/otp',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({external_ref:_supExternalRef, otpcode:otp})
+  })
+  .then(function(r){return r.json();})
+  .then(function(data){
+    btn.textContent='Verify identity →'; btn.disabled=false;
+    if(data.error){errEl.textContent=data.error; errEl.style.display='block'; return;}
+    document.getElementById('supOTP').style.display='none';
+    document.getElementById('supTrigger').style.display='block';
+  })
+  .catch(function(){btn.textContent='Verify identity →'; btn.disabled=false; errEl.textContent='Something went wrong.'; errEl.style.display='block';});
+}
+
+function triggerSupportPayment() {
+  var btn=document.getElementById('supTriggerBtn');
+  btn.textContent='Sending...'; btn.disabled=true;
+  fetch(SUPPORT_API+'/payments/donate/guest/trigger',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({external_ref:_supExternalRef})
+  })
+  .then(function(r){return r.json();})
+  .then(function(data){
+    btn.textContent='Send donation →'; btn.disabled=false;
+    if(data.error){alert(data.error); return;}
+    document.getElementById('supTrigger').style.display='none';
+    document.getElementById('supWaiting').style.display='block';
+    startSupportPolling(_supExternalRef);
+  })
+  .catch(function(){btn.textContent='Send donation →'; btn.disabled=false; alert('Something went wrong.');});
+}
+
+function startSupportPolling(externalRef) {
+  var attempts=0; var maxAttempts=18;
+  var poll=setInterval(function(){
+    attempts++;
+    fetch(SUPPORT_API+'/payments/donate/guest/status',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({external_ref:externalRef})
+    })
+    .then(function(r){return r.json();})
+    .then(function(s){
+      if(s.status==='confirmed'){
+        clearInterval(poll);
+        document.getElementById('supWaiting').style.display='none';
+        var name=document.getElementById('supportName').value.trim().split(' ')[0];
+        document.getElementById('supSuccessMsg').textContent = (name?'Thank you, '+name+'! ':'Thank you! ')+'Your donation helps Manbi reach more rural communities and fund more Ghanaian entrepreneurs.';
+        document.getElementById('sup2').style.display='block';
+      } else if(s.status==='failed'||attempts>=maxAttempts){
+        clearInterval(poll);
+        document.getElementById('supWaiting').style.display='none';
+        document.getElementById('sup1').style.display='block';
+        if(s.status==='failed') alert('Donation failed. Please try again.');
+      }
+    }).catch(function(){});
+  },5000);
 }
 </script>
 
