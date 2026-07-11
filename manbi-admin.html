@@ -278,6 +278,24 @@ input,select,textarea{font-family:var(--fb)}
       </div>
 
       <div class="form-card">
+        <div class="form-card-title">📱 Entrepreneur MoMo Details <span style="font-size:12px;font-weight:400;color:var(--ink60)">(for loan disbursement & SMS updates)</span></div>
+        <div class="form-grid">
+          <div>
+            <div class="f-label">MoMo Number <span class="required">*</span></div>
+            <input class="f-inp" id="add-entrepreneur-phone" type="tel" placeholder="e.g. 0241234567">
+          </div>
+          <div>
+            <div class="f-label">MoMo Network <span class="required">*</span></div>
+            <select class="f-sel" id="add-entrepreneur-network">
+              <option value="mtn">MTN MoMo</option>
+              <option value="telecel">Telecel Cash</option>
+              <option value="airteltigo">AirtelTigo Money</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-card">
         <div class="form-card-title">💰 Loan Details</div>
         <div class="form-grid">
           <div>
@@ -701,6 +719,8 @@ function submitEntrepreneur() {
   var narrative = document.getElementById('add-narrative').value.trim();
   var photo = document.getElementById('add-photo').value.trim();
   var video = document.getElementById('add-video').value.trim();
+  var entrepreneurPhone = document.getElementById('add-entrepreneur-phone').value.trim();
+  var entrepreneurNetwork = document.getElementById('add-entrepreneur-network').value;
   var partnerName = document.getElementById('add-partner-name').value.trim();
   var partnerDesc = document.getElementById('add-partner-description').value.trim();
   var partnerLogo = document.getElementById('add-partner-logo').value.trim();
@@ -741,7 +761,9 @@ function submitEntrepreneur() {
       partner_logo_url: partnerLogo || null,
       partner_contact: partnerContact || null,
       featured: featured,
-      repayment_track: repaymentTrack || 'standard'
+      repayment_track: repaymentTrack || 'standard',
+      entrepreneur_phone: entrepreneurPhone || null,
+      entrepreneur_network: entrepreneurNetwork || 'mtn'
     })
   })
   .then(function(r) {
@@ -947,7 +969,7 @@ function updateCount(el, countId, max, unit) {
 }
 
 function clearAddForm() {
-  ['add-name','add-initials','add-location','add-amount','add-purpose','add-repayment','add-narrative','add-photo','add-video','add-partner-name','add-partner-description','add-partner-logo','add-partner-contact'].forEach(function(id) {
+  ['add-name','add-initials','add-location','add-amount','add-purpose','add-repayment','add-narrative','add-photo','add-video','add-partner-name','add-partner-description','add-partner-logo','add-partner-contact','add-entrepreneur-phone'].forEach(function(id) {
     document.getElementById(id).value = '';
   });
   document.getElementById('add-sector').value = '';
