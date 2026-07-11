@@ -372,41 +372,21 @@ button{cursor:pointer;font-family:var(--fb)}
       <button class="ob-btn" onclick="obNext(1)">Looks good — continue →</button>
     </div>
 
-    <!-- Step OB2: Squad -->
+    <!-- Step OB2: Squad (Coming Soon) -->
     <div class="ob-step" id="ob2">
       <div class="ob-progress">
         <div class="ob-dot done" id="od1b"></div>
         <div class="ob-dot active" id="od2b"></div>
         <div class="ob-dot" id="od3b"></div>
       </div>
-      <div class="ob-title">Join a squad 👥</div>
-      <p class="ob-sub">Squads compete on the leaderboard and fund loans together. Pick one that fits you — or skip and join later.</p>
-
-      <div class="squad-grid">
-        <div class="squad-opt" onclick="selSquad(this,'legon')">
-          <div class="squad-opt-icon">🎓</div>
-          <div class="squad-opt-name">Legon Tech Squad</div>
-          <div class="squad-opt-members">47 members · #2 on leaderboard</div>
-        </div>
-        <div class="squad-opt" onclick="selSquad(this,'knust')">
-          <div class="squad-opt-icon">⚗️</div>
-          <div class="squad-opt-name">KNUST Pioneers</div>
-          <div class="squad-opt-members">52 members · #1 on leaderboard</div>
-        </div>
-        <div class="squad-opt" onclick="selSquad(this,'accra')">
-          <div class="squad-opt-icon">🏙️</div>
-          <div class="squad-opt-name">Corporate Accra</div>
-          <div class="squad-opt-members">38 members · #3 on leaderboard</div>
-        </div>
-        <div class="squad-opt" onclick="selSquad(this,'ashesi')">
-          <div class="squad-opt-icon">💻</div>
-          <div class="squad-opt-name">Ashesi Innovation</div>
-          <div class="squad-opt-members">29 members · #4 on leaderboard</div>
-        </div>
+      <div class="ob-title">Squads 👥</div>
+      <p class="ob-sub">Squads let you compete on the leaderboard and fund loans together with your community. This feature is coming soon!</p>
+      <div style="background:#F0FDF4;border:1px solid #D1FAE5;border-radius:16px;padding:24px;text-align:center;margin-bottom:24px">
+        <div style="font-size:40px;margin-bottom:12px">🚀</div>
+        <div style="font-size:16px;font-weight:600;color:#065F46;margin-bottom:6px">Coming Soon</div>
+        <div style="font-size:13px;color:#6B7280;line-height:1.6">Squads, leaderboards and group challenges are launching soon. Badges you earn now will count when squads go live!</div>
       </div>
-      <div class="squad-skip" onclick="obNext(2)">Skip for now — I'll join a squad later</div>
-      <div style="height:10px"></div>
-      <button class="ob-btn" onclick="obNext(2)" id="squadBtn">Join squad &amp; continue →</button>
+      <button class="ob-btn" onclick="obNext(2)">Continue →</button>
     </div>
 
     <!-- Step OB3: Fund first loan -->
@@ -417,22 +397,16 @@ button{cursor:pointer;font-family:var(--fb)}
         <div class="ob-dot active"></div>
       </div>
       <div class="ob-title">Your first act of impact 🌱</div>
-      <p class="ob-sub">You're all set. Here's a entrepreneur who needs just a little more to get fully funded. Want to make your first move?</p>
+      <p class="ob-sub">You're all set. Here's an entrepreneur who needs just a little more to get fully funded. Want to make your first move?</p>
 
-      <div class="fund-nudge">
-        <div class="fund-nudge-icon">🌾</div>
-        <div class="fund-nudge-title">Kwame needs GHS 220 more</div>
-        <div class="fund-nudge-sub">Tamale farmer — buying fertilizer before the rainy season starts in 3 weeks.</div>
-        <div class="fund-card-mini">
-          <div class="fcm-name">Kwame Mensah</div>
-          <div class="fcm-loc">Tamale, Northern Region · Farming</div>
-          <div class="fcm-bar"><div class="fcm-bar-fill" style="width:78%"></div></div>
-          <div class="fcm-row"><span>GHS 780 raised</span><span style="color:#1A9070;font-weight:500">78% funded</span></div>
-        </div>
+      <div class="fund-nudge" id="ob3LoanCard">
+        <div class="fund-nudge-icon">🌱</div>
+        <div class="fund-nudge-title">Loading active loans...</div>
+        <div class="fund-nudge-sub"></div>
       </div>
 
-      <button class="ob-btn" onclick="goToDashboard('fund')">Fund Kwame from GHS 10 →</button>
-      <button class="ob-btn-ghost" onclick="goToDashboard('browse')">Browse all entrepreneurs first</button>
+      <button class="ob-btn" id="ob3FundBtn" onclick="goToDashboard('fund')" style="display:none">Fund from GHS 10 →</button>
+      <button class="ob-btn-ghost" onclick="goToDashboard('browse')">Browse all entrepreneurs →</button>
     </div>
 
   </div><!-- /onboarding -->
@@ -640,7 +614,43 @@ function startOnboarding(fname){
 
 function obNext(step){
   document.getElementById('ob'+step).classList.remove('active');
-  if(step<3){document.getElementById('ob'+(step+1)).classList.add('active');}
+  if(step<3){
+    document.getElementById('ob'+(step+1)).classList.add('active');
+    if(step===2){ loadOb3Loan(); }
+  }
+}
+
+function loadOb3Loan() {
+  var EMOJI = {food:'🍲',fashion:'👗',farming:'🌾',tech:'💻',beauty:'💄',transport:'🚐',retail:'🛒',health:'💊',education:'📚'};
+  fetch(API + '/loans?status=active&limit=1')
+    .then(function(r){ return r.json(); })
+    .then(function(loans) {
+      if (!Array.isArray(loans) || loans.length === 0) {
+        document.getElementById('ob3LoanCard').innerHTML = '<div class="fund-nudge-icon">🌱</div><div class="fund-nudge-title">Real entrepreneurs are waiting</div><div class="fund-nudge-sub">Browse active listings and make your first act of impact.</div>';
+        return;
+      }
+      var l = loans[0];
+      var raised = parseFloat(l.amount_raised || l.raised || 0);
+      var goal = parseFloat(l.goal_amount || 1);
+      var pct = Math.min(100, Math.round((raised / goal) * 100));
+      var remaining = goal - raised;
+      var emoji = EMOJI[(l.sector||'').toLowerCase()] || '🏪';
+      document.getElementById('ob3LoanCard').innerHTML =
+        '<div class="fund-nudge-icon">' + emoji + '</div>' +
+        '<div class="fund-nudge-title">' + l.entrepreneur_name + ' needs GHS ' + remaining.toLocaleString() + ' more</div>' +
+        '<div class="fund-nudge-sub">' + (l.location||'Ghana') + ' · ' + (l.sector||'Business') + '</div>' +
+        '<div class="fund-card-mini">' +
+          '<div class="fcm-name">' + l.entrepreneur_name + '</div>' +
+          '<div class="fcm-loc">' + (l.location||'') + ' · ' + (l.sector||'') + '</div>' +
+          '<div class="fcm-bar"><div class="fcm-bar-fill" style="width:' + pct + '%"></div></div>' +
+          '<div class="fcm-row"><span>GHS ' + raised.toLocaleString() + ' raised</span><span style="color:#1A9070;font-weight:500">' + pct + '% funded</span></div>' +
+        '</div>';
+      document.getElementById('ob3FundBtn').textContent = 'Fund ' + l.entrepreneur_name.split(' ')[0] + ' from GHS 10 →';
+      document.getElementById('ob3FundBtn').style.display = 'block';
+    })
+    .catch(function() {
+      document.getElementById('ob3LoanCard').innerHTML = '<div class="fund-nudge-icon">🌱</div><div class="fund-nudge-title">Real entrepreneurs are waiting</div><div class="fund-nudge-sub">Browse active listings and make your first act of impact.</div>';
+    });
 }
 
 /* ── AVATAR ── */

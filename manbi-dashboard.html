@@ -343,6 +343,7 @@ nav{background:#fff!important;border-bottom:1px solid var(--ink12);min-height:62
         <div class="nav-level" id="navLevel">Seed Sower · Level 1</div>
       </div>
       <button class="btn-topup" onclick="openTopup()">+ Top up</button>
+      <button onclick="openDonateManbi()" style="background:#F5C842;color:#0F1C17;border:none;padding:7px 14px;border-radius:50px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap">💛 Support Manbi</button>
       <button class="btn-signout" onclick="signOut()">Sign out</button>
     </div>
   </div>
@@ -1701,6 +1702,246 @@ function submitWithdraw() {
     btn.textContent = 'Confirm & Send →'; btn.disabled = false;
     errEl.textContent = 'Something went wrong. Please try again.'; errEl.style.display='block';
   });
+}
+</script>
+
+<!-- ══ SUPPORT MANBI MODAL ══ -->
+<div class="modal-overlay" id="donateModal" onclick="if(event.target===this)closeModal('donateModal')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <button class="m-close" onclick="closeModal('donateModal')">✕</button>
+    <div id="dm1">
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-size:40px;margin-bottom:8px">💛</div>
+        <div style="font-family:var(--fd);font-size:22px;color:var(--ink);margin-bottom:6px">Support Manbi</div>
+        <div style="font-size:13px;color:var(--ink60);line-height:1.6">Your donation keeps Manbi running — free for every entrepreneur who needs it.</div>
+      </div>
+      <div class="field-lbl">Amount (GHS)</div>
+      <div class="amt-wrap"><div class="amt-curr">GHS</div><input class="amt-input" id="dmAmt" type="number" min="1" value="10"></div>
+      <div class="quick-amounts" style="margin-bottom:20px">
+        <button class="q-btn active" onclick="setDonateAmt(10)">GHS 10</button>
+        <button class="q-btn" onclick="setDonateAmt(20)">GHS 20</button>
+        <button class="q-btn" onclick="setDonateAmt(50)">GHS 50</button>
+        <button class="q-btn" onclick="setDonateAmt(100)">GHS 100</button>
+      </div>
+      <div class="field-lbl">Pay from</div>
+      <div style="display:flex;gap:10px;margin-bottom:16px">
+        <div id="dmVaultOpt" onclick="selectDmSource('vault')" style="flex:1;border:1.5px solid var(--t400);border-radius:12px;padding:12px;cursor:pointer;background:var(--t50)">
+          <div style="font-size:13px;font-weight:600;color:var(--ink)">🏦 My Vault</div>
+          <div style="font-size:11px;color:var(--ink60);margin-top:2px">Balance: <span id="dmVaultBal">GHS —</span></div>
+        </div>
+        <div id="dmMomoOpt" onclick="selectDmSource('momo')" style="flex:1;border:1.5px solid var(--ink12);border-radius:12px;padding:12px;cursor:pointer">
+          <div style="font-size:13px;font-weight:600;color:var(--ink)">📱 MoMo</div>
+          <div style="font-size:11px;color:var(--ink60);margin-top:2px">Pay directly</div>
+        </div>
+      </div>
+      <!-- MoMo fields (hidden by default) -->
+      <div id="dmMomoFields" style="display:none">
+        <div class="pay-methods" id="dmPayMethods" style="margin-bottom:10px">
+          <div class="pay-method selected" onclick="selPay(this,'momo')"><div class="pay-dot"></div><div class="pay-name">📱 MTN MoMo</div></div>
+          <div class="pay-method" onclick="selPay(this,'momo')"><div class="pay-dot"></div><div class="pay-name">📱 Telecel Cash</div></div>
+          <div class="pay-method" onclick="selPay(this,'momo')"><div class="pay-dot"></div><div class="pay-name">📱 AirtelTigo</div></div>
+        </div>
+        <input class="phone-input" id="dmPhone" type="tel" placeholder="Your MoMo number" style="margin-bottom:10px">
+      </div>
+      <div id="dmErr" style="display:none;background:#FEF2F2;color:#C0392B;font-size:13px;padding:10px 14px;border-radius:10px;margin-bottom:14px"></div>
+      <button class="m-confirm" id="dmBtn" onclick="submitDonate()" style="background:var(--g400)">Donate to Manbi 💛</button>
+    </div>
+    <div id="dm2" style="display:none">
+      <div class="m-success">
+        <div class="success-circle">💛</div>
+        <div class="s-title">Thank you so much!</div>
+        <div class="s-msg" id="dmSuccessMsg">Your donation goes directly to keeping Manbi alive for Ghana's entrepreneurs.</div>
+        <button class="m-confirm" style="max-width:260px;margin:0 auto;display:block;background:var(--g400)" onclick="closeModal('donateModal')">Done</button>
+      </div>
+    </div>
+    <!-- OTP step for MoMo donations -->
+    <div id="dmOTP" style="display:none;text-align:center;padding:10px 0">
+      <div style="font-size:40px;margin-bottom:12px">🔐</div>
+      <div style="font-family:var(--fd);font-size:18px;color:var(--ink);margin-bottom:8px">Verify your identity</div>
+      <div style="font-size:13px;color:var(--ink60);line-height:1.6;margin-bottom:20px">Enter the OTP sent to your phone.</div>
+      <input id="dmOTPInput" type="number" placeholder="Enter OTP code" style="width:100%;padding:13px 14px;border:1.5px solid var(--ink12);border-radius:12px;font-size:18px;text-align:center;letter-spacing:4px;outline:none;box-sizing:border-box;margin-bottom:14px">
+      <div id="dmOTPErr" style="display:none;color:#C0392B;font-size:13px;margin-bottom:10px"></div>
+      <button id="dmOTPBtn" onclick="submitDonateOTP()" style="width:100%;padding:14px;background:var(--g400);color:#fff;border:none;border-radius:50px;font-size:15px;font-weight:500;cursor:pointer">Verify identity →</button>
+      <button onclick="document.getElementById('dmOTP').style.display='none';document.getElementById('dm1').style.display='block'" style="margin-top:10px;background:none;border:none;color:var(--ink60);font-size:13px;cursor:pointer">← Back</button>
+    </div>
+    <div id="dmTrigger" style="display:none;text-align:center;padding:20px 0">
+      <div style="font-size:48px;margin-bottom:16px">✅</div>
+      <div style="font-family:var(--fd);font-size:20px;color:var(--ink);margin-bottom:8px">Identity verified!</div>
+      <div style="font-size:14px;color:var(--ink60);line-height:1.6;margin-bottom:24px">Click below to complete your donation.</div>
+      <button id="dmTriggerBtn" onclick="triggerDonatePayment()" style="width:100%;padding:14px;background:var(--g400);color:#fff;border:none;border-radius:50px;font-size:15px;font-weight:500;cursor:pointer">Send donation →</button>
+    </div>
+    <div id="dmWaiting" style="display:none;text-align:center;padding:20px 0">
+      <div style="font-size:48px;margin-bottom:16px">📱</div>
+      <div style="font-family:var(--fd);font-size:20px;color:var(--ink);margin-bottom:8px">Check your phone</div>
+      <div style="font-size:14px;color:var(--ink60);line-height:1.6;margin-bottom:20px">Approve the USSD prompt to complete your donation.</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;color:var(--ink60);font-size:13px">
+        <div class="spinner" style="width:16px;height:16px;border-width:2px"></div>
+        Waiting for approval...
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var _dmSource = 'vault';
+var _dmExternalRef = null;
+var _dmToken = null;
+
+function openDonateManbi() {
+  document.getElementById('dm1').style.display='block';
+  document.getElementById('dm2').style.display='none';
+  document.getElementById('dmOTP').style.display='none';
+  document.getElementById('dmTrigger').style.display='none';
+  document.getElementById('dmWaiting').style.display='none';
+  document.getElementById('dmErr').style.display='none';
+  document.getElementById('dmAmt').value='10';
+  var vaultText = document.getElementById('vaultAmount').textContent.replace('GHS ','').trim();
+  document.getElementById('dmVaultBal').textContent = 'GHS ' + (parseFloat(vaultText)||0).toFixed(2);
+  selectDmSource('vault');
+  document.getElementById('donateModal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function setDonateAmt(v) {
+  document.getElementById('dmAmt').value = v;
+  document.querySelectorAll('#donateModal .q-btn').forEach(function(b){
+    b.classList.toggle('active', parseInt(b.textContent.replace('GHS ',''))===v);
+  });
+}
+
+function selectDmSource(source) {
+  _dmSource = source;
+  document.getElementById('dmVaultOpt').style.borderColor = source==='vault' ? 'var(--g400)' : 'var(--ink12)';
+  document.getElementById('dmVaultOpt').style.background = source==='vault' ? 'var(--g100)' : '#fff';
+  document.getElementById('dmMomoOpt').style.borderColor = source==='momo' ? 'var(--g400)' : 'var(--ink12)';
+  document.getElementById('dmMomoOpt').style.background = source==='momo' ? 'var(--g100)' : '#fff';
+  document.getElementById('dmMomoFields').style.display = source==='momo' ? 'block' : 'none';
+}
+
+function submitDonate() {
+  var amt = parseFloat(document.getElementById('dmAmt').value) || 0;
+  var errEl = document.getElementById('dmErr');
+  var btn = document.getElementById('dmBtn');
+  var token = sessionStorage.getItem('manbi_token');
+  errEl.style.display='none';
+
+  if (!amt || amt < 1) { errEl.textContent='Please enter a valid amount.'; errEl.style.display='block'; return; }
+  if (!token) { window.location.href='/login'; return; }
+
+  if (_dmSource === 'vault') {
+    var vaultBal = parseFloat(document.getElementById('vaultAmount').textContent.replace('GHS ','')) || 0;
+    if (amt > vaultBal) { errEl.textContent='Amount exceeds your vault balance of GHS '+vaultBal.toFixed(2)+'.'; errEl.style.display='block'; return; }
+    btn.textContent='Processing...'; btn.disabled=true;
+    fetch(API + '/payments/donate', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({amount:amt, source:'vault'})
+    })
+    .then(function(r){return r.json();})
+    .then(function(data){
+      btn.textContent='Donate to Manbi 💛'; btn.disabled=false;
+      if(data.error){errEl.textContent=data.error; errEl.style.display='block'; return;}
+      document.getElementById('dm1').style.display='none';
+      document.getElementById('dm2').style.display='block';
+      document.getElementById('dmSuccessMsg').textContent='GHS '+amt.toFixed(2)+' donated from your vault. Thank you for keeping Manbi alive!';
+      document.getElementById('vaultAmount').textContent='GHS '+(vaultBal-amt).toFixed(2);
+      var t=sessionStorage.getItem('manbi_token'); if(t) loadDashboard(t);
+    })
+    .catch(function(){btn.textContent='Donate to Manbi 💛'; btn.disabled=false; errEl.textContent='Something went wrong.'; errEl.style.display='block';});
+  } else {
+    var phone = document.getElementById('dmPhone').value.trim();
+    if (!phone) { errEl.textContent='Please enter your MoMo number.'; errEl.style.display='block'; return; }
+    var selectedPayEl = document.querySelector('#dmPayMethods .pay-method.selected .pay-name');
+    var payText = selectedPayEl ? selectedPayEl.textContent : 'MTN MoMo';
+    var network='mtn';
+    if(payText.toLowerCase().includes('telecel')) network='telecel';
+    else if(payText.toLowerCase().includes('airteltigo')) network='airteltigo';
+    _dmToken=token;
+    btn.textContent='Sending request...'; btn.disabled=true;
+    fetch(API + '/payments/donate', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({amount:amt, source:'momo', phone_number:phone, network:network})
+    })
+    .then(function(r){return r.json();})
+    .then(function(data){
+      btn.textContent='Donate to Manbi 💛'; btn.disabled=false;
+      if(data.error){errEl.textContent=data.error; errEl.style.display='block'; return;}
+      _dmExternalRef=data.external_ref;
+      if(data.requires_otp){
+        document.getElementById('dm1').style.display='none';
+        document.getElementById('dmOTP').style.display='block';
+        document.getElementById('dmOTPInput').value='';
+        document.getElementById('dmOTPErr').style.display='none';
+      } else {
+        document.getElementById('dm1').style.display='none';
+        document.getElementById('dmTrigger').style.display='block';
+      }
+    })
+    .catch(function(){btn.textContent='Donate to Manbi 💛'; btn.disabled=false; errEl.textContent='Something went wrong.'; errEl.style.display='block';});
+  }
+}
+
+function submitDonateOTP() {
+  var otp=document.getElementById('dmOTPInput').value.trim();
+  var errEl=document.getElementById('dmOTPErr');
+  var btn=document.getElementById('dmOTPBtn');
+  if(!otp){errEl.textContent='Please enter the OTP code.'; errEl.style.display='block'; return;}
+  btn.textContent='Verifying...'; btn.disabled=true; errEl.style.display='none';
+  fetch(API+'/payments/collect/otp',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+_dmToken},
+    body:JSON.stringify({external_ref:_dmExternalRef, otpcode:otp})
+  })
+  .then(function(r){return r.json();})
+  .then(function(data){
+    btn.textContent='Verify identity →'; btn.disabled=false;
+    if(data.error){errEl.textContent=data.error; errEl.style.display='block'; return;}
+    document.getElementById('dmOTP').style.display='none';
+    document.getElementById('dmTrigger').style.display='block';
+  })
+  .catch(function(){btn.textContent='Verify identity →'; btn.disabled=false; errEl.textContent='Something went wrong.'; errEl.style.display='block';});
+}
+
+function triggerDonatePayment() {
+  var btn=document.getElementById('dmTriggerBtn');
+  btn.textContent='Sending...'; btn.disabled=true;
+  fetch(API+'/payments/collect/trigger',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+_dmToken},
+    body:JSON.stringify({external_ref:_dmExternalRef})
+  })
+  .then(function(r){return r.json();})
+  .then(function(data){
+    btn.textContent='Send donation →'; btn.disabled=false;
+    if(data.error){alert(data.error); return;}
+    document.getElementById('dmTrigger').style.display='none';
+    document.getElementById('dmWaiting').style.display='block';
+    var attempts=0; var maxAttempts=18;
+    var poll=setInterval(function(){
+      attempts++;
+      fetch(API+'/payments/status',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+_dmToken},
+        body:JSON.stringify({external_ref:_dmExternalRef})
+      })
+      .then(function(r){return r.json();})
+      .then(function(s){
+        if(s.status==='confirmed'){
+          clearInterval(poll);
+          document.getElementById('dmWaiting').style.display='none';
+          document.getElementById('dm2').style.display='block';
+        } else if(s.status==='failed'||attempts>=maxAttempts){
+          clearInterval(poll);
+          document.getElementById('dmWaiting').style.display='none';
+          document.getElementById('dm1').style.display='block';
+          if(s.status==='failed') alert('Donation failed. Please try again.');
+        }
+      }).catch(function(){});
+    },5000);
+  })
+  .catch(function(){btn.textContent='Send donation →'; btn.disabled=false; alert('Something went wrong.');});
 }
 </script>
 
