@@ -346,7 +346,27 @@ button{cursor:pointer;font-family:var(--fb)}
         <div class="ob-dot" id="od3"></div>
       </div>
       <div class="ob-title">Make it yours 🎨</div>
-      <p class="ob-sub">Pick an avatar and colour for your impact profile. This is what the Manbi community sees.</p>
+      <p class="ob-sub">Pick an avatar for your impact profile — or upload a photo. This is what the Manbi community sees. You can stay anonymous too.</p>
+
+      <!-- Optional photo upload -->
+      <div style="margin-bottom:18px">
+        <div style="font-size:12px;font-weight:600;color:var(--ink60);letter-spacing:.4px;text-transform:uppercase;margin-bottom:10px">Profile photo (optional)</div>
+        <div style="display:flex;align-items:center;gap:14px">
+          <div id="photoPreviewWrap" style="width:64px;height:64px;border-radius:50%;background:#E6F7F3;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;overflow:hidden;border:2px solid var(--ink12)">
+            <span id="photoPreviewEmoji">📷</span>
+          </div>
+          <div style="flex:1">
+            <label style="display:inline-block;background:#fff;border:1.5px solid var(--ink12);border-radius:10px;padding:8px 16px;font-size:13px;font-weight:500;color:var(--ink);cursor:pointer;transition:border-color .2s">
+              <input type="file" id="photoUpload" accept="image/*" style="display:none" onchange="handlePhotoUpload(this)">
+              📁 Choose photo
+            </label>
+            <div style="font-size:11px;color:var(--ink60);margin-top:6px">JPG, PNG or WEBP. Max 5MB. Or skip and use an emoji below.</div>
+          </div>
+        </div>
+        <div id="photoUploadStatus" style="display:none;font-size:12px;margin-top:8px;color:var(--t500)"></div>
+      </div>
+
+      <div style="font-size:12px;font-weight:600;color:var(--ink60);letter-spacing:.4px;text-transform:uppercase;margin-bottom:10px">Or pick an emoji avatar</div>
 
       <div class="avatar-picker" id="avatarPicker">
         <div class="av-opt selected" style="background:#E6F7F3" onclick="selAvatar(this,'🌱')">🌱</div>
@@ -616,6 +636,13 @@ function obNext(step){
   document.getElementById('ob'+step).classList.remove('active');
   if(step<3){
     document.getElementById('ob'+(step+1)).classList.add('active');
+    if(step===1 && _uploadedPhotoUrl && currentUser) {
+      // Save uploaded photo to profile
+      var token = sessionStorage.getItem('manbi_token');
+      if (token) {
+        fetch(API+'/users/profile',{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({profile_photo_url:_uploadedPhotoUrl})}).catch(function(){});
+      }
+    }
     if(step===2){ loadOb3Loan(); }
   }
 }
@@ -635,8 +662,11 @@ function loadOb3Loan() {
       var pct = Math.min(100, Math.round((raised / goal) * 100));
       var remaining = goal - raised;
       var emoji = EMOJI[(l.sector||'').toLowerCase()] || '🏪';
+      var photoHtml = l.profile_photo_url
+        ? '<img src="' + l.profile_photo_url + '" alt="' + l.entrepreneur_name + '" style="width:100%;height:160px;object-fit:cover;border-radius:12px;margin-bottom:12px;display:block">'
+        : '<div style="font-size:32px;margin-bottom:8px">' + emoji + '</div>';
       document.getElementById('ob3LoanCard').innerHTML =
-        '<div class="fund-nudge-icon">' + emoji + '</div>' +
+        photoHtml +
         '<div class="fund-nudge-title">' + l.entrepreneur_name + ' needs GHS ' + remaining.toLocaleString() + ' more</div>' +
         '<div class="fund-nudge-sub">' + (l.location||'Ghana') + ' · ' + (l.sector||'Business') + '</div>' +
         '<div class="fund-card-mini">' +
@@ -654,16 +684,66 @@ function loadOb3Loan() {
 }
 
 /* ── AVATAR ── */
+var _uploadedPhotoUrl = null;
+
+function handlePhotoUpload(input) {
+  var file = input.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { alert('Photo must be under 5MB.'); return; }
+
+  var statusEl = document.getElementById('photoUploadStatus');
+  var previewWrap = document.getElementById('photoPreviewWrap');
+  statusEl.textContent = 'Uploading...'; statusEl.style.display = 'block'; statusEl.style.color = 'var(--ink60)';
+
+  var formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', 'manbi_uploads');
+
+  fetch('https://api.cloudinary.com/v1_1/ldvqmntm/image/upload', {
+    method: 'POST',
+    body: formData
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.secure_url) {
+      _uploadedPhotoUrl = data.secure_url;
+      previewWrap.innerHTML = '<img src="' + data.secure_url + '" style="width:64px;height:64px;border-radius:50%;object-fit:cover">';
+      statusEl.textContent = '✓ Photo uploaded successfully'; statusEl.style.color = 'var(--t500)';
+      // Clear emoji selection
+      document.querySelectorAll('.av-opt').forEach(function(a){ a.classList.remove('selected'); });
+      // Update live preview
+      document.getElementById('prevAvatar').innerHTML = '<img src="' + data.secure_url + '" style="width:48px;height:48px;border-radius:50%;object-fit:cover">';
+      // Save to user profile if logged in
+      if (currentUser) {
+        currentUser.profile_photo_url = data.secure_url;
+        sessionStorage.setItem('manbi_lender', JSON.stringify(currentUser));
+        var token = sessionStorage.getItem('manbi_token');
+        if (token) { fetch(API+'/users/profile',{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({profile_photo_url:data.secure_url})}).catch(function(){}); }
+      }
+    } else {
+      statusEl.textContent = 'Upload failed. Please try again.'; statusEl.style.color = '#C0392B';
+    }
+  })
+  .catch(function() {
+    statusEl.textContent = 'Upload failed. Please try again.'; statusEl.style.color = '#C0392B';
+  });
+}
+
 function selAvatar(el,emoji){
   document.querySelectorAll('.av-opt').forEach(function(a){a.classList.remove('selected');});
   el.classList.add('selected');
   selectedAvatar=emoji;
+  _uploadedPhotoUrl = null; // Clear photo when emoji chosen
   document.getElementById('prevAvatar').textContent=emoji;
+  document.getElementById('photoPreviewWrap').innerHTML = '<span id="photoPreviewEmoji">📷</span>';
+  document.getElementById('photoUpload').value = '';
+  document.getElementById('photoUploadStatus').style.display = 'none';
   if(currentUser){
     currentUser.avatar=emoji;
+    currentUser.profile_photo_url = null;
     sessionStorage.setItem('manbi_lender',JSON.stringify(currentUser));
     var token=sessionStorage.getItem('manbi_token');
-    if(token){fetch(API+'/users/profile',{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({avatar:emoji})}).catch(function(){});}
+    if(token){fetch(API+'/users/profile',{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({avatar:emoji,profile_photo_url:null})}).catch(function(){});}
   }
 }
 
