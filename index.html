@@ -460,6 +460,12 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:40px 8%;display
   <input name="network">
   <input name="phone">
 </form>
+<form name="contact-us" netlify netlify-honeypot="bot-field" style="position:absolute;width:0;height:0;overflow:hidden;opacity:0;pointer-events:none">
+  <input type="text" name="name">
+  <input type="email" name="email">
+  <input type="text" name="topic">
+  <textarea name="message"></textarea>
+</form>
 
 <div class="kente"></div>
 
@@ -764,7 +770,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:40px 8%;display
     <a href="#">Terms</a>
     <a href="#">Privacy</a>
     <a href="manbi-agent-login.html">Agent Portal</a>
-    <a href="mailto:manbiinitiative@gmail.com">Contact</a>
+    <a href="javascript:void(0)" onclick="openContact()">Contact</a>
   </div>
 
 <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.07);font-size:11px;color:rgba(255,255,255,.3);line-height:1.7;max-width:800px;text-align:center;">
@@ -914,7 +920,89 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:40px 8%;display
   </div>
 </div>
 
+<!-- ══ CONTACT MODAL ══ -->
+<div class="modal-overlay" id="contactModal" onclick="if(event.target===this)closeModal('contactModal')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <button class="m-close" onclick="closeModal('contactModal')">✕</button>
+    <div id="contact1">
+      <div class="m-title">Get in touch 👋</div>
+      <div class="m-sub">Questions, partnership ideas, media enquiries, or anything else — we'd love to hear from you. We typically reply within 48 hours.</div>
+      <input class="f-input" id="contactName" type="text" placeholder="Your name">
+      <input class="f-input" id="contactEmail" type="email" placeholder="Your email">
+      <div style="font-size:11px;font-weight:500;color:var(--ink60);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">What's this about?</div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+        <button class="sa-btn active" style="flex:1" onclick="selContactTopic(this,'General enquiry')">General</button>
+        <button class="sa-btn" style="flex:1" onclick="selContactTopic(this,'Partnership')">Partnership</button>
+        <button class="sa-btn" style="flex:1" onclick="selContactTopic(this,'Press / media')">Press</button>
+        <button class="sa-btn" style="flex:1" onclick="selContactTopic(this,'Support issue')">Support</button>
+      </div>
+      <textarea class="f-input" id="contactMessage" placeholder="Your message" rows="4" style="resize:vertical;font-family:var(--fb)"></textarea>
+      <div id="contactErr" style="display:none;background:#FEF2F2;color:#C0392B;font-size:13px;padding:10px 14px;border-radius:10px;margin-bottom:14px"></div>
+      <button class="m-confirm" id="contactBtn" onclick="submitContact()">Send message →</button>
+      <div style="text-align:center;margin-top:10px;font-size:12px;color:var(--ink60)">Or email us directly at <a href="mailto:manbiinitiative@gmail.com" style="color:var(--t500)">manbiinitiative@gmail.com</a></div>
+    </div>
+    <div id="contact2" style="display:none">
+      <div class="m-success">
+        <div class="success-circle">👋</div>
+        <div class="s-title">Message sent!</div>
+        <div class="s-msg">Thanks for reaching out — we'll get back to you within 48 hours.</div>
+        <button class="m-confirm" style="max-width:260px;margin:0 auto;display:block" onclick="closeModal('contactModal')">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
+/* contact modal */
+var _contactTopic = 'General enquiry';
+function openContact(){
+  document.getElementById('contact1').style.display='block';
+  document.getElementById('contact2').style.display='none';
+  document.getElementById('contactErr').style.display='none';
+  document.getElementById('contactModal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function selContactTopic(btn,topic){
+  btn.closest('div').querySelectorAll('.sa-btn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  _contactTopic = topic;
+}
+function submitContact(){
+  var errEl=document.getElementById('contactErr');
+  var btn=document.getElementById('contactBtn');
+  errEl.style.display='none';
+  var name=document.getElementById('contactName').value.trim();
+  var email=document.getElementById('contactEmail').value.trim();
+  var message=document.getElementById('contactMessage').value.trim();
+
+  if(!name){errEl.textContent='Please enter your name.'; errEl.style.display='block'; return;}
+  if(!email){errEl.textContent='Please enter your email.'; errEl.style.display='block'; return;}
+  if(!message){errEl.textContent='Please enter a message.'; errEl.style.display='block'; return;}
+
+  btn.textContent='Sending...'; btn.disabled=true;
+
+  fetch('/',{
+    method:'POST',
+    headers:{'Content-Type':'application/x-www-form-urlencoded'},
+    body:'form-name=contact-us'
+      +'&name='+encodeURIComponent(name)
+      +'&email='+encodeURIComponent(email)
+      +'&topic='+encodeURIComponent(_contactTopic)
+      +'&message='+encodeURIComponent(message)
+  })
+  .then(function(){
+    btn.textContent='Send message →'; btn.disabled=false;
+    document.getElementById('contact1').style.display='none';
+    document.getElementById('contact2').style.display='block';
+  })
+  .catch(function(){
+    btn.textContent='Send message →'; btn.disabled=false;
+    errEl.textContent='Something went wrong. Please try emailing us directly instead.';
+    errEl.style.display='block';
+  });
+}
+
 /* nav */
 function toggleDrawer(){document.getElementById('drawer').classList.toggle('open')}
 function closeDrawer(){document.getElementById('drawer').classList.remove('open')}
@@ -1164,7 +1252,7 @@ function startSupportPolling(externalRef) {
     }
     var emojiMap = {food:'🍲',fashion:'👗',farming:'🌾',tech:'💻',beauty:'💄',transport:'🚐',retail:'🛍',health:'💊'};
     gridLoans.forEach(function(loan) {
-      var raised = parseFloat(loan.amount_raised || loan.funded_amount || 0);
+      var raised = parseFloat(loan.raised || 0);
       var goal   = parseFloat(loan.goal_amount || 1);
       var pct    = Math.min(100, Math.round((raised / goal) * 100));
       var emoji  = emojiMap[(loan.sector||'').toLowerCase()] || '🏪';
@@ -1210,7 +1298,7 @@ function startSupportPolling(externalRef) {
   function openLoanDetail(id) {
     var l = CURRENT_LOANS.find(function(x) { return String(x.id) === String(id); });
     if (!l) return;
-    var raised = parseFloat(l.amount_raised || l.funded_amount || 0);
+    var raised = parseFloat(l.raised || 0);
     var goal   = parseFloat(l.goal_amount || 1);
     var pct    = Math.min(100, Math.round((raised / goal) * 100));
     var emojiMap = {food:'🍲',fashion:'👗',farming:'🌾',tech:'💻',beauty:'💄',transport:'🚐',retail:'🛍',health:'💊'};
