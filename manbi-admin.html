@@ -359,6 +359,11 @@ input,select,textarea{font-family:var(--fb)}
             <input class="f-inp" id="add-video" type="url" placeholder="https://youtube.com/watch?v=...">
           </div>
         </div>
+        <div class="form-field">
+          <div class="f-label">Ghana Card (ID) <span class="required">*</span></div>
+          <input class="f-inp" id="add-id-card" type="url" placeholder="https://... (upload to Cloudinary first)">
+          <div class="field-hint">Upload a photo of the entrepreneur's Ghana Card to cloudinary.com and paste the URL here. Required for verification before a listing goes live.</div>
+        </div>
       </div>
 
       <div class="form-card">
@@ -718,6 +723,7 @@ function submitEntrepreneur() {
   var repayment = document.getElementById('add-repayment').value.trim();
   var narrative = document.getElementById('add-narrative').value.trim();
   var photo = document.getElementById('add-photo').value.trim();
+  var idCard = document.getElementById('add-id-card').value.trim();
   var video = document.getElementById('add-video').value.trim();
   var entrepreneurPhone = document.getElementById('add-entrepreneur-phone').value.trim();
   var entrepreneurNetwork = document.getElementById('add-entrepreneur-network').value;
@@ -728,7 +734,7 @@ function submitEntrepreneur() {
   var featured = document.getElementById('add-featured').checked;
   var repaymentTrack = document.querySelector('input[name="repayment_track"]:checked').value;
 
-  if (!name || !initials || !location || !sector || !amount || !purpose || !narrative) {
+  if (!name || !initials || !location || !sector || !amount || !purpose || !narrative || !idCard) {
     showToast('Please fill in all required fields.', 'error');
     return;
   }
@@ -755,6 +761,7 @@ function submitEntrepreneur() {
       repayment_plan: repayment,
       narrative: narrative,
       profile_photo_url: photo || null,
+      id_card_url: idCard,
       video_url: video || null,
       partner_name: partnerName || null,
       partner_description: partnerDesc || null,
@@ -969,7 +976,7 @@ function updateCount(el, countId, max, unit) {
 }
 
 function clearAddForm() {
-  ['add-name','add-initials','add-location','add-amount','add-purpose','add-repayment','add-narrative','add-photo','add-video','add-partner-name','add-partner-description','add-partner-logo','add-partner-contact','add-entrepreneur-phone'].forEach(function(id) {
+  ['add-name','add-initials','add-location','add-amount','add-purpose','add-repayment','add-narrative','add-photo','add-id-card','add-video','add-partner-name','add-partner-description','add-partner-logo','add-partner-contact','add-entrepreneur-phone'].forEach(function(id) {
     document.getElementById(id).value = '';
   });
   document.getElementById('add-sector').value = '';
