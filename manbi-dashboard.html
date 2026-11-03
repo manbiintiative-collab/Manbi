@@ -1204,6 +1204,7 @@ function selPay(el, type){
     if (type === 'card') phoneIn.placeholder = '';
     else phoneIn.placeholder = 'Enter your MoMo number e.g. 024 000 0000';
   }
+  updateSummary();
 }
 
 // ── REPAYMENT ──
@@ -1259,8 +1260,16 @@ function updateSummary(){
   document.getElementById('feeAmt').textContent=feeOn?'+ GHS '+fee.toFixed(2):'+ GHS 0.00';
   document.getElementById('sumFeeRow').style.opacity=feeOn?'1':'.4';
   var btn=document.getElementById('confirmBtn');
-  btn.textContent='Confirm & send GHS '+total.toFixed(2)+' via MoMo';
-  btn.disabled=amt<10;
+  var selectedPayEl=document.querySelector('#checkoutModal .pay-method.selected .pay-name');
+  var payText=selectedPayEl?selectedPayEl.textContent:'MTN MoMo';
+  var isVault=payText.toLowerCase().includes('vault');
+  if(isVault){
+    btn.textContent='Confirm & pay GHS '+total.toFixed(2)+' from vault';
+    btn.disabled=amt<1;
+  } else {
+    btn.textContent='Confirm & send GHS '+total.toFixed(2)+' via MoMo';
+    btn.disabled=amt<10;
+  }
 }
 function toggleFee(){feeOn=!feeOn;document.getElementById('feeCheck').classList.toggle('off',!feeOn);updateSummary();}
 function submitCheckout(){
