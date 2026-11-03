@@ -641,13 +641,8 @@ nav{background:#fff!important;border-bottom:1px solid var(--ink12);min-height:62
       <div class="m-success">
         <div class="success-circle">🎉</div>
         <div class="s-title">You're in!</div>
-        <div class="s-msg">Your contribution has been recorded. Please send <strong>GHS <span id="coSuccessAmt"></span></strong> via MoMo to complete your funding.</div>
-        <div style="background:#F0FDF4;border:1.5px solid #D1FAE5;border-radius:14px;padding:16px 20px;margin:16px 0 20px;text-align:left">
-          <div style="font-size:12px;color:#1A9070;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Send MoMo payment to</div>
-          <div style="font-size:20px;font-weight:700;color:#0F1C17;letter-spacing:1px">055 XXX XXXX</div>
-          <div style="font-size:12px;color:#4B5563;margin-top:2px">Manbi · MTN MoMo · Reference: your name</div>
-        </div>
-        <div style="font-size:12px;color:#6B7280;margin-bottom:18px">We'll confirm your contribution within 24 hours once your MoMo transfer is received.</div>
+        <div class="s-msg">Your payment was approved and your contribution has been recorded. Welcome to the Manbi community!</div>
+        <div style="font-size:13px;color:#6B7280;margin-bottom:18px">Your funded loans will appear in your dashboard shortly.</div>
         <button class="m-confirm" style="max-width:260px;margin:0 auto;display:block" onclick="closeModal('checkoutModal')">Back to dashboard</button>
         <div class="share-btns">
           <button class="share-btn">📲 Share on WhatsApp</button>
@@ -1318,34 +1313,37 @@ function submitCheckout(){
   btn.textContent = 'Sending request...';
   btn.disabled = true;
 
-  fetch(API + '/loans/' + currentLoanId + '/fund', {
+  fetch(API + '/payments/collect', {
     method: 'POST',
     headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
     body: JSON.stringify({
+      loan_id: currentLoanId,
       amount: amt,
-      payment_method: network,
       phone_number: phone,
+      network: network,
       include_support: feeIncluded
     })
   })
   .then(function(r){ return r.json(); })
   .then(function(data){
     btn.disabled = false;
-    btn.textContent = 'Confirm & Pay';
+    btn.textContent = 'Confirm & send via MoMo';
     if(data.error){ alert(data.error); return; }
-    // Show success — MoMo funding is recorded as pending; admin confirms receipt
-    var fee = feeIncluded ? parseFloat((amt*0.05).toFixed(2)) : 0;
-    var totalAmt = (amt + fee).toFixed(2);
-    var amtEl = document.getElementById('coSuccessAmt');
-    if(amtEl) amtEl.textContent = totalAmt;
+    window._coToken = token;
+    window._coExternalRef = data.external_ref;
     document.getElementById('co1').style.display='none';
-    document.getElementById('co2').style.display='block';
-    var t = sessionStorage.getItem('manbi_token');
-    if(t) loadDashboard(t);
+    if (data.requires_otp) {
+      document.getElementById('coOTPErr').style.display='none';
+      document.getElementById('coOTPInput').value='';
+      document.getElementById('coOTP').style.display='block';
+    } else {
+      document.getElementById('coWaiting').style.display='block';
+      startCoPolling(data.external_ref, token);
+    }
   })
   .catch(function(){
     btn.disabled = false;
-    btn.textContent = 'Confirm & Pay';
+    btn.textContent = 'Confirm & send via MoMo';
     alert('Something went wrong. Please try again.');
   });
 }
